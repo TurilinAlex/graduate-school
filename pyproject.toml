@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "graduate-school"
+version = "0.1.0"
+description = "Research work during postgraduate studies"
+authors = ["turilin <turilin@primatlab.com>"]
+license = "BSD-3-Clause license"
+readme = "README.md"
+packages = [{include = "graduate_school"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
