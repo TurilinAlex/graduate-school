@@ -9,7 +9,14 @@ packages = [{include = "graduate_school"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+pandas = "^2.0.3"
+numpy = "^1.25.0"
+requests = "^2.31.0"
+matplotlib = "^3.7.1"
 
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
 
 [build-system]
 requires = ["poetry-core"]
