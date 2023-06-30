@@ -40,17 +40,49 @@ if __name__ == '__main__':
     plt.plot(df.Close.values, color='black')
     plt.plot(close)
 
-    plt.scatter(max_index_first, max_values_first, color='r', s=10, label=f'max_eps={max_eps_first}')
-    plt.scatter(min_index_first, min_values_first, color='g', s=10, label=f'min_eps={min_eps_first}')
+    plt.scatter(
+        max_index_first,
+        max_values_first,
+        color='r',
+        s=10,
+        label=f'max_eps:{max_eps_first} len:{len(max_index_first)}'
+    )
+    plt.scatter(
+        min_index_first,
+        min_values_first,
+        color='g',
+        s=10,
+        label=f'min_eps:{min_eps_first} len:{len(min_index_first)}'
+    )
 
-    plt.scatter(index_temp_second[max_index_second], max_values_second, color='r', s=60,
-                label=f'max_eps={max_eps_second}')
-    plt.scatter(index_temp_second[min_index_second], min_values_second, color='g', s=60,
-                label=f'min_eps={min_eps_second}')
+    plt.scatter(
+        index_temp_second[max_index_second],
+        max_values_second,
+        color='r',
+        s=60,
+        label=f'max_eps:{max_eps_second} len:{len(max_index_second)}'
+    )
+    plt.scatter(
+        index_temp_second[min_index_second],
+        min_values_second,
+        color='g',
+        s=60,
+        label=f'min_eps:{min_eps_second} len:{len(min_index_second)}'
+    )
 
-    plt.scatter(index_temp_second[index_temp_third[max_index_third]], max_values_third, color='r', s=150,
-                label=f'max_eps={max_eps_third}')
-    plt.scatter(index_temp_second[index_temp_third[min_index_third]], min_values_third, color='g', s=150,
-                label=f'min_eps={min_eps_third}')
+    plt.scatter(
+        index_temp_second[index_temp_third[max_index_third]],
+        max_values_third,
+        color='r',
+        s=150,
+        label=f'max_eps:{max_eps_third} len:{len(max_index_third)}'
+    )
+    plt.scatter(
+        index_temp_second[index_temp_third[min_index_third]],
+        min_values_third,
+        color='g',
+        s=150,
+        label=f'min_eps={min_eps_third} len:{len(min_index_third)}'
+    )
     plt.legend()
     plt.show()
