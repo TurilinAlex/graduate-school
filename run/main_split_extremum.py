@@ -5,9 +5,11 @@ import pandas as pd
 from core_math.extremum import coincident, max_extremum, min_extremum
 from core_math.merge_arg_sort import merge_arg_sort
 
-NUM_COINCIDENT = [2, 1, 1]
-EPS = [14, 1, 1]
-
+NUM_COINCIDENT = [4, 1, 1]
+EPS = [34, 2, 1]
+N_ROW = 10_000
+P = 0.7
+N = int(N_ROW * P)
 
 def main_min_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
     min_index_first, min_eps_first = coincident(NUM_COINCIDENT[0])(min_extremum)(index=input_sort_index, eps=EPS[0])
@@ -111,10 +113,10 @@ def main_max_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
 
 
 if __name__ == '__main__':
-    n = 10_000
-    df = pd.read_csv('../data/EUR_AUD.csv', nrows=n)
-    index = df.index[:n // 2]
-    close = df.Close.values[:n // 2]
+
+    df = pd.read_csv('../data/AUD_USD.csv', nrows=N_ROW)
+    index = df.index[:N]
+    close = df.Close.values[:N]
 
     index_first = merge_arg_sort(close)
     main_max_extremum(index_first, close)

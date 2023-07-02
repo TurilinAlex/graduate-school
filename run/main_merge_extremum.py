@@ -5,15 +5,19 @@ import pandas as pd
 from core_math.extremum import coincident, max_extremum, min_extremum
 from core_math.merge_arg_sort import merge_arg_sort
 
+N_ROW = 10_000
+P = 0.7
+N = int(N_ROW * P)
+
 if __name__ == '__main__':
-    df = pd.read_csv('../data/EUR_AUD.csv', nrows=10_000)
-    index = df.index[:5_000]
-    close = df.Close.values[:5_000]
+    df = pd.read_csv('../data/USD_CHF.csv', nrows=N_ROW)
+    index = df.index[:N]
+    close = df.Close.values[:N]
 
     # first iteration
     index_first = merge_arg_sort(close)
-    max_index_first, max_eps_first = coincident(4)(max_extremum)(index=index_first, eps=34)
-    min_index_first, min_eps_first = coincident(4)(min_extremum)(index=index_first, eps=34)
+    max_index_first, max_eps_first = coincident(3)(max_extremum)(index=index_first, eps=50)
+    min_index_first, min_eps_first = coincident(3)(min_extremum)(index=index_first, eps=50)
     max_values_first = close[max_index_first]
     min_values_first = close[min_index_first]
 
@@ -32,8 +36,8 @@ if __name__ == '__main__':
     close_temp_third = close[index_temp_second[index_temp_third]]
     index_third = merge_arg_sort(close_temp_third)
 
-    max_index_third, max_eps_third = coincident(2)(max_extremum)(index=index_third, eps=1)
-    min_index_third, min_eps_third = coincident(2)(min_extremum)(index=index_third, eps=1)
+    max_index_third, max_eps_third = coincident(1)(max_extremum)(index=index_third, eps=1)
+    min_index_third, min_eps_third = coincident(1)(min_extremum)(index=index_third, eps=1)
     max_values_third = close[index_temp_second[index_temp_third[max_index_third]]]
     min_values_third = close[index_temp_second[index_temp_third[min_index_third]]]
 
