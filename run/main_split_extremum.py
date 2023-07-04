@@ -11,6 +11,7 @@ N_ROW = 10_000
 P = 0.7
 N = int(N_ROW * P)
 
+
 def main_min_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
     min_index_first, min_eps_first = coincident(NUM_COINCIDENT[0])(min_extremum)(index=input_sort_index, eps=EPS[0])
     min_values_first = values[min_index_first]
@@ -30,9 +31,6 @@ def main_min_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
 
     min_index_third, min_eps_third = coincident(NUM_COINCIDENT[2])(min_extremum)(index=index_third, eps=EPS[2])
     min_values_third = values[index_temp_second[index_temp_third[min_index_third]]]
-
-    plt.plot(df.Close.values, color='black')
-    plt.plot(values)
 
     plt.scatter(
         min_index_first,
@@ -57,8 +55,6 @@ def main_min_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
         s=150,
         label=f'min_eps={min_eps_third} len:{len(min_index_third)}'
     )
-    plt.legend()
-    plt.show()
 
 
 def main_max_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
@@ -80,9 +76,6 @@ def main_max_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
 
     max_index_third, max_eps_third = coincident(NUM_COINCIDENT[2])(max_extremum)(index=index_third, eps=EPS[2])
     max_values_third = values[index_temp_second[index_temp_third[max_index_third]]]
-
-    plt.plot(df.Close.values, color='black')
-    plt.plot(values)
 
     plt.scatter(
         max_index_first,
@@ -108,9 +101,6 @@ def main_max_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
         label=f'max_eps:{max_eps_third} len:{len(max_index_third)}'
     )
 
-    plt.legend()
-    plt.show()
-
 
 if __name__ == '__main__':
 
@@ -121,3 +111,8 @@ if __name__ == '__main__':
     index_first = merge_arg_sort(close)
     main_max_extremum(index_first, close)
     main_min_extremum(index_first, close)
+
+    plt.plot(df.Close.values, color='black')
+    plt.plot(close)
+    plt.legend()
+    plt.show()
