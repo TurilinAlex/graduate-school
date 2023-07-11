@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 
-def merge_arg_sort(values: np.ndarray) -> np.ndarray:
+def merge_arg_sort(values: np.ndarray | list) -> np.ndarray:
     n = len(values)
     index_temp = np.zeros((n,), np.int32)
     index = np.arange(n)
