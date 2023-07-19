@@ -88,5 +88,6 @@ if __name__ == '__main__':
         s=150,
         label=f'min_eps={min_eps_third} len:{len(min_index_third)}'
     )
+    plt.grid()
     plt.legend()
     plt.show()

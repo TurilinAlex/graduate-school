@@ -114,5 +114,6 @@ if __name__ == '__main__':
 
     plt.plot(df.Close.values, color='black')
     plt.plot(close)
+    plt.grid()
     plt.legend()
     plt.show()
