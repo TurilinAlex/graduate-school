@@ -6,6 +6,7 @@ __all__ = [
 
 
 def merge_arg_sort(values: np.ndarray | list) -> np.ndarray:
+    # sourcery skip: use-assigned-variable
     n = len(values)
     index_temp = np.zeros((n,), np.int32)
     index = np.arange(n)
@@ -21,7 +22,7 @@ def merge_arg_sort(values: np.ndarray | list) -> np.ndarray:
             index_temp[ls:re + 1] = index[ls:re + 1]
             i1 = ls
             j1 = rs
-            for k in range(i1, re + 1):
+            for k in range(ls, re + 1):
 
                 if i1 <= le and j1 <= re:
                     if values[index_temp[j1]] == values[index_temp[i1]]: status = 0

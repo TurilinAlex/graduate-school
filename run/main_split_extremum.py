@@ -5,10 +5,10 @@ import pandas as pd
 from core_math.extremum import coincident, max_extremum, min_extremum
 from core_math.merge_arg_sort import merge_arg_sort
 
-NUM_COINCIDENT = [4, 1, 1]
-EPS = [34, 2, 1]
+NUM_COINCIDENT = [3, 2, 1]
+EPS = [30, 2, 1]
 N_ROW = 10_000
-P = 0.7
+P = 0.9
 N = int(N_ROW * P)
 
 
@@ -104,7 +104,7 @@ def main_max_extremum(input_sort_index: np.ndarray, values: np.ndarray) -> None:
 
 if __name__ == '__main__':
 
-    df = pd.read_csv('../data/AUD_USD.csv', nrows=N_ROW)
+    df = pd.read_csv('../data/AUD_NZD.csv', nrows=N_ROW)
     index = df.index[:N]
     close = df.Close.values[:N]
 

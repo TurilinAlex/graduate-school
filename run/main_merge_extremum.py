@@ -6,11 +6,11 @@ from core_math.extremum import coincident, max_extremum, min_extremum
 from core_math.merge_arg_sort import merge_arg_sort
 
 N_ROW = 10_000
-P = 0.7
+P = 0.9
 N = int(N_ROW * P)
 
 if __name__ == '__main__':
-    df = pd.read_csv('../data/USD_CHF.csv', nrows=N_ROW)
+    df = pd.read_csv('../data/AUD_NZD.csv', nrows=N_ROW)
     index = df.index[:N]
     close = df.Close.values[:N]
 

@@ -53,7 +53,7 @@ def max_extremum(*, index: np.ndarray, eps: int) -> list[int]:
     return extreme_max
 
 
-def merge_extremum(extr_min, extr_max, value):
+def merge_extremum(extr_min, extr_max, value):  # sourcery skip: low-code-quality
     extr = []
     i = j = 0
     status = 0
@@ -92,4 +92,4 @@ def merge_extremum(extr_min, extr_max, value):
     else:
         extr.append(i_min)
 
-    return extr
+    return np.array(extr)
