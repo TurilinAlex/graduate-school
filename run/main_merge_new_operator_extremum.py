@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     # third iteration
     index_third = merge_arg_sort(close_second)
-    max_temp_index_third, max_eps_third = coincident(1)(max_extremum)(index=index_third, eps=1)
-    min_temp_index_third, min_eps_third = coincident(1)(min_extremum)(index=index_third, eps=1)
+    max_temp_index_third, max_eps_third = coincident(2)(max_extremum)(index=index_third, eps=1)
+    min_temp_index_third, min_eps_third = coincident(2)(min_extremum)(index=index_third, eps=1)
     max_values_third = close_second[max_temp_index_third]
     min_values_third = close_second[min_temp_index_third]
     index_temp_third = merge_extremum(
@@ -59,6 +59,23 @@ if __name__ == '__main__':
     index_merge_third = index_merge_second[index_temp_third]
     max_index_third = index_merge_second[max_temp_index_third]
     min_index_third = index_merge_second[min_temp_index_third]
+
+    # fourth iteration
+    index_fourth = merge_arg_sort(close_third)
+    max_temp_index_fourth, max_eps_fourth = coincident(1)(max_extremum)(index=index_fourth, eps=2)
+    min_temp_index_fourth, min_eps_fourth = coincident(1)(min_extremum)(index=index_fourth, eps=2)
+    max_values_fourth = close_third[max_temp_index_fourth]
+    min_values_fourth = close_third[min_temp_index_fourth]
+    index_temp_fourth = merge_extremum(
+        extr_max=sorted(max_temp_index_fourth),
+        extr_min=sorted(min_temp_index_fourth),
+        value=close_third
+    )
+    close_fourth = close_third[index_temp_fourth]
+    index_merge_fourth = index_merge_third[index_temp_fourth]
+    max_index_fourth = index_merge_third[max_temp_index_fourth]
+    min_index_fourth = index_merge_third[min_temp_index_fourth]
+
 
     plt.plot(df.Close.values, color='black')
     plt.plot(close)
@@ -110,6 +127,22 @@ if __name__ == '__main__':
         label=f'min_eps={min_eps_third} len:{len(min_index_third)}'
     )
     plt.plot(index_merge_third, close_third)
+
+    plt.scatter(
+        max_index_fourth,
+        max_values_fourth,
+        color='y',
+        s=150,
+        label=f'max_eps:{max_eps_fourth} len:{len(max_index_fourth)}'
+    )
+    plt.scatter(
+        min_index_fourth,
+        min_values_fourth,
+        color='m',
+        s=150,
+        label=f'min_eps={min_eps_fourth} len:{len(min_index_fourth)}'
+    )
+    plt.plot(index_merge_fourth, close_fourth)
 
     plt.grid()
     plt.legend()
