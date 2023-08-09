@@ -12,6 +12,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
+tradingmath = {path = "CoreMath"}
 python = "^3.11"
 pandas = "^2.0.3"
 numpy = "^1.25.0"
