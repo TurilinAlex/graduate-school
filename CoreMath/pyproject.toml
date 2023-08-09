@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "TradingMath"
+version = "0.1.0"
+description = "Fast math for trading strategies"
+authors = ["Turilin alex", "turilin@primatlab.com"]
+packages = [{ include = "TradingMath" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.21.0"
+
+[build-system]
+requires = ["setuptools", "wheel", "numpy>=1.21.0", "cython>=0.29.23"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry.build]
+generate-setup-file = true
+script = "setup.py"
