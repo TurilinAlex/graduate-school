@@ -1,12 +1,12 @@
 import numpy as np
 
 __all__ = [
-    'merge_arg_sort',
+    "merge_arg_sort",
 ]
 
 
-def merge_arg_sort(values: np.ndarray | list) -> np.ndarray:
-    # sourcery skip: use-assigned-variable
+def merge_arg_sort(values: np.ndarray[np.float32] | list[float]) -> np.ndarray[np.int32]:
+    # sourcery skip: low-code-quality, use-assigned-variable
     n = len(values)
     index_temp = np.zeros((n,), np.int32)
     index = np.arange(n)
@@ -25,12 +25,17 @@ def merge_arg_sort(values: np.ndarray | list) -> np.ndarray:
             for k in range(ls, re + 1):
 
                 if i1 <= le and j1 <= re:
-                    if values[index_temp[j1]] == values[index_temp[i1]]: status = 0
-                    if values[index_temp[j1]] < values[index_temp[i1]]: status = -1
-                    if values[index_temp[j1]] > values[index_temp[i1]]: status = 1
+                    if values[index_temp[j1]] == values[index_temp[i1]]:
+                        status = 0
+                    if values[index_temp[j1]] < values[index_temp[i1]]:
+                        status = -1
+                    if values[index_temp[j1]] > values[index_temp[i1]]:
+                        status = 1
 
-                if i1 > le: status = -1
-                if j1 > re: status = 1
+                if i1 > le:
+                    status = -1
+                if j1 > re:
+                    status = 1
 
                 if status >= 0:
                     index[k] = index_temp[i1]
