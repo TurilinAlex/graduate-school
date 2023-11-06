@@ -926,7 +926,7 @@ class CombinedExtremum(BaseTrendDetection):
             _combined_indexes,
         )
 
-        self._last_indexes = self._last_indexes[_index_combined]
+        self._last_indexes = _combined_indexes
         self._last_values = _combined_values
 
     # endregion Abstract implement
@@ -1208,13 +1208,15 @@ class SplitExtremum(BaseTrendDetection):
             max_coincident=num_coincident,
             eps=start_eps
         )
+        __max_index = np.sort(__max_index)
+        __min_index = np.sort(__min_index)
+        _max_values = self._values[__max_index]
+        _min_values = self._values[__min_index]
+
         _index_combined = np.sort(
             np.hstack((__max_index, __min_index)), kind="mergesort"
         )
         _values_combined = self._values[_index_combined]
-
-        _max_values = self._values[__max_index]
-        _min_values = self._values[__min_index]
 
         setattr(
             self,
@@ -1260,18 +1262,18 @@ class SplitExtremum(BaseTrendDetection):
             _values_combined,
         )
 
+        self._last_min_values = _min_values
+        self._last_max_values = _max_values
+
+        self._last_min_indexes = __min_index
+        self._last_max_indexes = __max_index
+
         self._last_values = _values_combined
         self._last_indexes = _index_combined
 
-        self._last_values_max = self._values[np.sort(__max_index, kind="mergesort")]
-        self._last_values_min = self._values[np.sort(__min_index, kind="mergesort")]
-
-        self._last_indexes_max = np.sort(__max_index, kind="mergesort")
-        self._last_indexes_min = np.sort(__min_index, kind="mergesort")
-
     def _continuation_iterations(self, num_coincident: int, start_eps: int):
-        _index_max = merge_arg_sort(self._last_values_max)
-        _index_min = merge_arg_sort(self._last_values_min)
+        _index_min = merge_arg_sort(self._last_min_values)
+        _index_max = merge_arg_sort(self._last_max_values)
         __max_index, _max_eps = self._coincident(
             extremal_max,
             index=_index_max,
@@ -1284,18 +1286,21 @@ class SplitExtremum(BaseTrendDetection):
             max_coincident=num_coincident,
             eps=start_eps
         )
+        __max_index = np.sort(__max_index)
+        __min_index = np.sort(__min_index)
+
+        _max_values = self._last_max_values[__max_index]
+        _min_values = self._last_min_values[__min_index]
+
+        _min_indexes = self._last_min_indexes[__min_index]
+        _max_indexes = self._last_max_indexes[__max_index]
 
         _index_combined = np.sort(
-            np.hstack((__max_index, __min_index)), kind="mergesort"
+            np.hstack((_max_indexes, _min_indexes)), kind="mergesort"
         )
 
-        _min_indexes = self._last_indexes_min[__min_index]
-        _max_indexes = self._last_indexes_max[__max_index]
-        _max_values = self._last_values[__max_index]
-        _min_values = self._last_values[__min_index]
-
-        _combined_values = self._last_values[_index_combined]
-        _combined_indexes = self._last_indexes[_index_combined]
+        _combined_values = self._values[_index_combined]
+        _combined_indexes = _index_combined
 
         setattr(
             self,
@@ -1341,13 +1346,13 @@ class SplitExtremum(BaseTrendDetection):
             _combined_indexes,
         )
 
-        self._last_indexes = self._last_indexes[_index_combined]
+        self._last_min_indexes = _min_indexes
+        self._last_max_indexes = _max_indexes
+
+        self._last_min_values = _min_values
+        self._last_max_values = _max_values
+
+        self._last_indexes = _combined_indexes
         self._last_values = _combined_values
-
-        self._last_values_max = self._values[np.sort(__max_index, kind="mergesort")]
-        self._last_values_min = self._values[np.sort(__min_index, kind="mergesort")]
-
-        self._last_indexes_max = np.sort(__max_index, kind="mergesort")
-        self._last_indexes_min = np.sort(__min_index, kind="mergesort")
 
     # endregion Abstract implement
