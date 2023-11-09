@@ -160,14 +160,13 @@ class Coincident:
     ):
         coincident_num = 1
         extreme = extremum(index, eps)
-        eps += 1
         while coincident_num < max_coincident:
+            eps += 1
             recalculated_extreme = extremum(index, eps)
             if len(extreme) == len(recalculated_extreme):
                 coincident_num += 1
             else:
                 extreme = recalculated_extreme
-                eps += coincident_num
                 coincident_num = 1
         return np.array(extreme), eps
 
