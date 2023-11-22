@@ -1,2 +1,3 @@
 include TradingMath/**/*.py
+include TradingMath/extremal.pyi
 exclude TradingMath/**/*.cpp
