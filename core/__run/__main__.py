@@ -57,6 +57,7 @@ class ProgramOptions:
 
     _run_mode = StringVerify()
     _match_mode = StringVerify()
+    _path = StringVerify()
 
     def __init__(self):
         _parser = argparse.ArgumentParser(description="Trend detection algorithm")
@@ -70,11 +71,16 @@ class ProgramOptions:
             help="Determines which algorithm for searching trend reversal points will be launched",
             default="byinput",
         )
+        _parser.add_argument(
+            "-path",
+            help="Path to the data",
+        )
 
         args = _parser.parse_args()
 
         self._run_mode = args.mode
         self._match_mode = args.match
+        self._path = args.path
 
     def get_run_mode(self) -> RunMode:
         """
@@ -88,11 +94,17 @@ class ProgramOptions:
         """
         return MatchesMode(self._match_mode.upper())
 
+    def get_path(self) -> str:
+        """
+        :return: Matches mode
+        """
+        return os.path.abspath(self._path)
+
 
 def main():
     option = ProgramOptions()
 
-    path = config.PATH
+    path = option.get_path()
     rows = config.ROWS
     test_size = config.TEST_SIZE
     eps = config.EPS

@@ -8,9 +8,8 @@ __eps = os.environ.get("EPS")
 __repeat = os.environ.get("REPEAT")
 __rows = os.environ.get("ROWS")
 __test_size = os.environ.get("TEST_SIZE")
-__path = os.environ.get("DATA")
+
 EPS = [int(num.strip()) for num in __eps.split(",")] if __eps is not None else None
 REPEAT = [int(num.strip()) for num in __repeat.split(",")] if __repeat is not None else None
 ROWS = int(__rows) if __rows is not None else None
 TEST_SIZE = int(__test_size) if __test_size is not None else None
-PATH = os.path.abspath(__path) if __path is not None else None
