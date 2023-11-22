@@ -6,13 +6,11 @@ authors = ["turilin <turilin@primatlab.com>"]
 license = "BSD-3-Clause license"
 readme = "README.md"
 packages = [
-    { include = "core_math" },
-    { include = "finance" },
-    { include = "run" }
+    { include = "core" },
 ]
 
 [tool.poetry.dependencies]
-tradingmath = {path = "CoreMath"}
+tradingmath = { path = "third_party" }
 python = "^3.11"
 pandas = "^2.0.3"
 numpy = "^1.25.0"
@@ -21,7 +19,11 @@ matplotlib = "^3.7.1"
 jupyter = "^1.0.0"
 black = "^23.9.1"
 latex = "^0.7.0"
+loguru = "^0.7.2"
+python-dotenv = "^1.0.0"
 
+[tool.black]
+line-length = 100
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"
@@ -29,3 +31,6 @@ pytest = "^7.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+trend_detection = "core.__run.__main__:main"
