@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from TradingMath.extremal import extremal_max, extremal_min
 
-from core_math.extremum import coincident
-from core_math.merge_arg_sort import merge_arg_sort
+from backup.extremum import coincident
+from backup.merge_arg_sort import merge_arg_sort
 
 P = 1
 N_ROW = 10_000

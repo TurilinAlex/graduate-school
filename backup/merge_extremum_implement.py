@@ -2,8 +2,8 @@ import random
 
 import matplotlib.pyplot as plt
 
-from core_math.extremum import max_extremum, min_extremum
-from core_math.merge_arg_sort import merge_arg_sort
+from backup.extremum import max_extremum, min_extremum
+from backup.merge_arg_sort import merge_arg_sort
 
 random.seed(123)
 

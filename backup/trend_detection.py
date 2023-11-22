@@ -438,7 +438,43 @@ class Visualisation:
             },
         )
 
-    def show(self, title: str, from_date: str, to_date, split_date: str, timeframe: str):
+    def show(self, title: str, from_date: str, to_date: str, split_date: str, timeframe: str):
+        self._render(
+            title=title,
+            from_date=from_date,
+            to_date=to_date,
+            split_date=split_date,
+            timeframe=timeframe
+        )
+        plt.show()
+        plt.close(self._fig)
+
+    def save(self, title: str, from_date: str, to_date: str, split_date: str, timeframe: str, name: str):
+        self._render(
+            title=title,
+            from_date=from_date,
+            to_date=to_date,
+            split_date=split_date,
+            timeframe=timeframe
+        )
+        plt.savefig(name)
+        plt.close(fig="all")
+
+    @staticmethod
+    def _plot(plot_func: Callable, args=None, kwargs=None):
+        if args is None:
+            args = ()
+        if kwargs is None:
+            kwargs = {}
+        plot_result = plot_func(*args, **kwargs)
+        plot_result = plot_result[0] if isinstance(plot_result, list) else plot_result
+        return plot_result
+
+    def _add_legend(self, plot_func: Callable, args=None, kwargs=None):
+        plot_result = self._plot(plot_func=plot_func, args=args, kwargs=kwargs)
+        self._legend_handles.append(plot_result)
+
+    def _render(self, title: str, from_date: str, to_date: str, split_date: str, timeframe: str):
         legend_1 = self._ax_legend.legend(
             handles=self._legend_handles,
             scatteryoffsets=[0.5],
@@ -478,22 +514,6 @@ class Visualisation:
                 color="gray",
                 alpha=0.7,
             )
-        plt.show()
-        plt.close(self._fig)
-
-    @staticmethod
-    def _plot(plot_func: Callable, args=None, kwargs=None):
-        if args is None:
-            args = ()
-        if kwargs is None:
-            kwargs = {}
-        plot_result = plot_func(*args, **kwargs)
-        plot_result = plot_result[0] if isinstance(plot_result, list) else plot_result
-        return plot_result
-
-    def _add_legend(self, plot_func: Callable, args=None, kwargs=None):
-        plot_result = self._plot(plot_func=plot_func, args=args, kwargs=kwargs)
-        self._legend_handles.append(plot_result)
 
 
 class BaseTrendDetection(ABC):
@@ -748,13 +768,16 @@ class CombinedExtremum(BaseTrendDetection):
     def _search_down2up_trend_point(
             self, values: np.ndarray, indexes: np.ndarray, eps: int, after_iter: int | None = None
     ):
-        _reindex = np.argsort(indexes)
-        _index = merge_arg_sort(values[_reindex])
-        __min_index = extremal_min(index=_index, eps=eps)
-        _min_values = values[_reindex[__min_index]]
-        _min_indexes = indexes[_reindex[__min_index]]
+        _index = merge_arg_sort(values)
+        __min_index = np.sort(extremal_min(index=_index, eps=eps))
+        _min_values = values[__min_index]
+        _min_indexes = indexes[__min_index]
 
-        setattr(self, self.TrendName.min_eps.value.format(after_iter=after_iter), eps)
+        setattr(
+            self,
+            self.TrendName.min_eps.value.format(after_iter=after_iter),
+            eps,
+        )
         setattr(
             self,
             self.TrendName.min_values.value.format(after_iter=after_iter),
@@ -769,13 +792,16 @@ class CombinedExtremum(BaseTrendDetection):
     def _search_up2down_trend_point(
             self, values: np.ndarray, indexes: np.ndarray, eps: int, after_iter: int | None = None
     ):
-        _reindex = np.argsort(indexes)
-        _index = merge_arg_sort(values[_reindex])
-        __max_index = extremal_max(index=_index, eps=eps)
-        _max_values = values[_reindex[__max_index]]
-        _max_indexes = indexes[_reindex[__max_index]]
+        _index = merge_arg_sort(values)
+        __max_index = np.sort(extremal_max(index=_index, eps=eps))
+        _max_values = values[__max_index]
+        _max_indexes = indexes[__max_index]
 
-        setattr(self, self.TrendName.max_eps.value.format(after_iter=after_iter), eps)
+        setattr(
+            self,
+            self.TrendName.max_eps.value.format(after_iter=after_iter),
+            eps,
+        )
         setattr(
             self,
             self.TrendName.max_values.value.format(after_iter=after_iter),
@@ -940,11 +966,10 @@ class MergeExtremum(BaseTrendDetection):
     def _search_down2up_trend_point(
             self, values: np.ndarray, indexes: np.ndarray, eps: int, after_iter: int | None = None
     ):
-        _reindex = np.argsort(indexes)
-        _index = merge_arg_sort(values[_reindex])
-        __min_index = extremal_min(index=_index, eps=eps)
-        _min_values = values[_reindex[__min_index]]
-        _min_indexes = indexes[_reindex[__min_index]]
+        _index = merge_arg_sort(values)
+        __min_index = np.sort(extremal_min(index=_index, eps=eps))
+        _min_values = values[__min_index]
+        _min_indexes = indexes[__min_index]
 
         setattr(
             self,
@@ -966,11 +991,10 @@ class MergeExtremum(BaseTrendDetection):
             self, values: np.ndarray[np.float32], indexes: np.ndarray[np.uint32], eps: int,
             after_iter: int | None = None
     ):
-        _reindex = np.argsort(indexes)
-        _index = merge_arg_sort(values[_reindex])
-        __max_index = extremal_max(index=_index, eps=eps)
-        _max_values = values[_reindex[__max_index]]
-        _max_indexes = indexes[_reindex[__max_index]]
+        _index = merge_arg_sort(values)
+        __max_index = np.sort(extremal_max(index=_index, eps=eps))
+        _max_values = values[__max_index]
+        _max_indexes = indexes[__max_index]
 
         setattr(
             self,
@@ -1151,11 +1175,10 @@ class SplitExtremum(BaseTrendDetection):
     def _search_down2up_trend_point(
             self, values: np.ndarray, indexes: np.ndarray, eps: int, after_iter: int | None = None
     ):
-        _reindex = np.argsort(indexes)
-        _index = merge_arg_sort(values[_reindex])
-        __min_index = extremal_min(index=_index, eps=eps)
-        _min_values = values[_reindex[__min_index]]
-        _min_indexes = indexes[_reindex[__min_index]]
+        _index = merge_arg_sort(values)
+        __min_index = np.sort(extremal_min(index=_index, eps=eps))
+        _min_values = values[__min_index]
+        _min_indexes = indexes[__min_index]
 
         setattr(
             self,
@@ -1176,13 +1199,16 @@ class SplitExtremum(BaseTrendDetection):
     def _search_up2down_trend_point(
             self, values: np.ndarray, indexes: np.ndarray, eps: int, after_iter: int | None = None
     ):
-        _reindex = np.argsort(indexes)
-        _index = merge_arg_sort(values[_reindex])
-        __max_index = extremal_max(index=_index, eps=eps)
-        _max_values = values[_reindex[__max_index]]
-        _max_indexes = indexes[_reindex[__max_index]]
+        _index = merge_arg_sort(values)
+        __max_index = np.sort(extremal_max(index=_index, eps=eps))
+        _max_values = values[__max_index]
+        _max_indexes = indexes[__max_index]
 
-        setattr(self, self.TrendName.max_eps.value.format(after_iter=after_iter), eps)
+        setattr(
+            self,
+            self.TrendName.max_eps.value.format(after_iter=after_iter),
+            eps,
+        )
         setattr(
             self,
             self.TrendName.max_values.value.format(after_iter=after_iter),

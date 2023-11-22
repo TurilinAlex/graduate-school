@@ -168,7 +168,7 @@ class Coincident:
             else:
                 extreme = recalculated_extreme
                 coincident_num = 1
-        return np.array(extreme), eps
+        return np.sort(extreme), eps
 
 
 class CoincidentNew:
@@ -190,4 +190,4 @@ class CoincidentNew:
             else:
                 extreme = recalculated_extreme
                 coincident_num = 1
-        return np.array(extreme), eps
+        return np.sort(extreme), eps

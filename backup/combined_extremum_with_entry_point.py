@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from core_math.extremum import coincident, max_extremum, min_extremum
-from core_math.merge_arg_sort import merge_arg_sort
+from backup.extremum import coincident, max_extremum, min_extremum
+from backup.merge_arg_sort import merge_arg_sort
 
 N_ROW = 10_000
 P = 0.9
