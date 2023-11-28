@@ -1,7 +1,13 @@
-from numpy import uint32, ndarray
+from numpy import int64, uint64, float64, ndarray
 
-
-def extremal_max(index: ndarray[uint32], eps: int) -> ndarray[uint32]: ...
-
-
-def extremal_min(index: ndarray[uint32], eps: int) -> ndarray[uint32]: ...
+def argsort(
+    value: ndarray[int64 | uint64 | float64], index: ndarray[int64], reverse=False
+) -> None: ...
+def extremal_max(index: ndarray[int64], eps: int) -> ndarray[int64]: ...
+def extremal_min(index: ndarray[int64], eps: int) -> ndarray[int64]: ...
+def search_main_extremum(
+    index: ndarray[int64],
+    coincident: int,
+    eps: int,
+    parallel: bool = False,
+) -> tuple[ndarray[int64], ndarray[int64], int, int]: ...

@@ -1,1 +1,1 @@
-from .extremal cimport merge_arg_sort, extremal_max, extremal_min
+from .extremal cimport argsort, extremal_max, extremal_min, search_main_extremum
