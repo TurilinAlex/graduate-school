@@ -1,6 +1,9 @@
 import numpy
 from Cython.Build import cythonize
+from Cython.Compiler import Options
 from setuptools import setup, Extension
+
+Options.fast_fail = True
 
 ext = cythonize(
     [
@@ -8,7 +11,7 @@ ext = cythonize(
             name="TradingMath.*",
             sources=["TradingMath/**/*.pyx"],
             language='c++',
-            extra_compile_args=["-std=c++17", "-O3", "-ffast-math"],
+            extra_compile_args=["-std=c++17", "-O3", "-ffast-math", "-DCYTHON_FAST_GIL"],
         ),
     ],
     annotate=True,
