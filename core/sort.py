@@ -14,8 +14,8 @@ def argsort(values: np.ndarray[np.float32] | list[float]) -> np.ndarray[np.int32
     """
 
     n = len(values)
-    index_temp = np.zeros((n,), np.int32)
-    index = np.arange(n)
+    index_temp = np.zeros((n,), dtype=np.int32)
+    index = np.arange(n, dtype=np.int32)
 
     h = 1
     status = 0

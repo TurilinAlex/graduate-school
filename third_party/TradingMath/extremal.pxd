@@ -3,11 +3,11 @@ cimport numpy as np
 from libcpp cimport bool
 
 ctypedef fused DALLTYPE_t:
-    long double
-    long long int
-    unsigned long long int
+    int
+    double
+    unsigned int
 
-ctypedef long long int DLONGINTTYPE_t
+ctypedef int DLONGINTTYPE_t
 
 
 cpdef void argsort(DALLTYPE_t[:] value, DLONGINTTYPE_t[:] index_view, bool reverse = *)

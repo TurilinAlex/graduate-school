@@ -61,7 +61,7 @@ cpdef search_main_extremum(
             min_eps = min_extr_diff[min_extr_diff_index[i]] + coincident - 1
             break
 
-    cdef np.ndarray[DLONGINTTYPE_t, ndim=1] min_main_index = np.empty((min_split_index,), np.int64)
+    cdef np.ndarray[DLONGINTTYPE_t, ndim=1] min_main_index = np.empty((min_split_index,), np.int32)
     for i in range(min_split_index):
         min_main_index[i] = index[min_extr_diff_index[i]]
 
@@ -83,7 +83,7 @@ cpdef search_main_extremum(
             max_eps = max_extr_diff[max_extr_diff_index[i]] + coincident - 1
             break
 
-    cdef np.ndarray[DLONGINTTYPE_t, ndim=1] max_main_index = np.empty((n - max_split_index,), np.int64)
+    cdef np.ndarray[DLONGINTTYPE_t, ndim=1] max_main_index = np.empty((n - max_split_index,), np.int32)
     for i in range(max_split_index, n):
         max_main_index[i - max_split_index] = index[max_extr_diff_index[i]]
 
@@ -385,7 +385,7 @@ cpdef np.ndarray[DLONGINTTYPE_t, ndim=1] extremal_max(DLONGINTTYPE_t[:] index, c
         DLONGINTTYPE_t n = index.shape[0]
         DLONGINTTYPE_t[:] extremum_view
 
-    extremum_view = np.empty_like(index, dtype=np.int64)
+    extremum_view = np.empty_like(index, dtype=np.int32)
 
     if parallel:
         __extremal_max_parallel(index, extremum_view, n, eps)
@@ -430,7 +430,7 @@ cpdef np.ndarray[DLONGINTTYPE_t, ndim=1] extremal_min(DLONGINTTYPE_t[:] index, c
         DLONGINTTYPE_t n = index.shape[0]
         DLONGINTTYPE_t[:] extremum_view
 
-    extremum_view = np.empty_like(index, dtype=np.int64)
+    extremum_view = np.empty_like(index, dtype=np.int32)
 
     if parallel:
         __extremal_min_parallel(index, extremum_view, n, eps)
