@@ -1,7 +1,7 @@
 # distutils: language=c++
 # distutils: extra_compile_args=-fopenmp
 # distutils: extra_link_args=-fopenmp
-# cython: boundscheck=False, wraparound=False, nonecheck=False, initializedcheck=False
+# cython: boundscheck=False, wraparound=False, nonecheck=False, initializedcheck=False, infer_types=True
 
 import numpy as np
 cimport numpy as np

@@ -1,6 +1,3 @@
-# distutils: language=c++
-#cython: boundscheck=False, wraparound=False, nonecheck=False
-
 import numpy as np
 cimport numpy as np
 from libcpp cimport bool
