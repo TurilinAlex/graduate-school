@@ -25,7 +25,7 @@ def argsort(values: np.ndarray[np.float32] | list[float]) -> np.ndarray[np.int32
             le = j + h - 1
             rs = j + h
             re = min(j + 2 * h - 1, n - 1)
-            index_temp[ls : re + 1] = index[ls : re + 1]
+            index_temp[ls: re + 1] = index[ls: re + 1]
             i1 = ls
             j1 = rs
             for k in range(ls, re + 1):
