@@ -9,6 +9,7 @@ def argsort(values: np.ndarray[np.float32] | list[float]) -> np.ndarray[np.int32
     """
     Адресная сортировка слияние по матрице сравнений
 
+    :rtype: object
     :param values: Входной массив значений
     :return: Отсортированный массив индексов входных элементов
     """

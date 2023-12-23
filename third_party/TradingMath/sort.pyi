@@ -1,0 +1,3 @@
+from numpy import int32, uint32, float32, ndarray
+
+def argsort(value: ndarray[int32 | uint32 | float32], index: ndarray[int32], reverse: bool = False, parallel: bool = False,) -> None: ...

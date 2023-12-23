@@ -2,20 +2,14 @@ import time
 from typing import Callable
 
 import numpy as np
-from TradingMath.extremal import (
-    extremal_min,
-    extremal_max,
-    search_main_extremum,
-    argsort,
-)
+from TradingMath.v1.essential_extremum import localize_extremes as v1_le
+from TradingMath.v2.essential_extremum import localize_extremes as v2_le
+from TradingMath.sort import argsort
+from TradingMath.extremum import localize_minimals, localize_maximals
 
 from core.matches_extremum import BaseMatchesOnArray
-from core.trend import SplitTrendDetection
 
-# from core.sort import argsort
-
-
-np.random.seed(9)
+# np.random.seed(9)
 
 
 def min_extremum(index: np.ndarray[np.uint32], eps: int) -> np.ndarray[np.uint32]:
@@ -58,7 +52,7 @@ def max_extremum(index: np.ndarray[np.uint32], eps: int) -> np.ndarray[np.uint32
 class MatchesOnInputArray(BaseMatchesOnArray):
     @staticmethod
     def __call__(
-        extremum: Callable[[np.ndarray[np.uint32], int], np.ndarray[np.uint32]],
+        extremum: Callable[[np.ndarray[np.uint32], int, bool], np.ndarray[np.uint32]],
         index: np.ndarray[np.uint32],
         max_coincident=1,
         eps: int = 1,
@@ -75,10 +69,10 @@ class MatchesOnInputArray(BaseMatchesOnArray):
         """
 
         coincident_num = 1
-        extreme = extremum(index, eps, parallel=True)
+        extreme = extremum(index, eps, False)
         while coincident_num < max_coincident:
             eps += 1
-            recalculated_extreme = extremum(index, eps, parallel=True)
+            recalculated_extreme = extremum(index, eps, False)
             if len(extreme) == len(recalculated_extreme):
                 coincident_num += 1
             else:
@@ -169,84 +163,79 @@ def search_main_extremum_1(index: np.ndarray[np.uint32], coincident: int, eps: i
 
 
 def main():
-    size = 10_000
-    data = np.random.uniform(0, 50, size)
-    index = np.zeros((size,), dtype=np.int64)
-    s0 = time.monotonic()
-    argsort(data, index)
-    print(time.monotonic() - s0)
-    # repeat = 4
-    # eps = 10
-    # s1 = time.monotonic()
-    # min_index, max_index, eps_min, eps_max = search_main_extremum(
-    #     index=index,
-    #     coincident=repeat,
-    #     eps=eps,
-    #     parallel=True,
+    np.random.seed(23235)
+    size = 2_000
+
+    data = np.random.uniform(0, 100000, size)
+    index = np.argsort(data, kind="mergesort").astype(np.int32)
+    # index = np.array(
+    #     [3, 6, 0, 2, 13, 5, 8, 10, 4, 16, 17, 19, 14, 11, 9, 18, 12, 1, 7, 15], dtype=np.int32
     # )
-    # print(time.monotonic() - s1)
-    #
+    repeat = 1
+    eps = 2
+
+    match = MatchesOnInputArray()
+    s1 = time.monotonic()
+    min_index_1, max_index_1, eps_min_1, eps_max_1 = v1_le(
+        index=index,
+        coincident=repeat,
+        eps=eps,
+        parallel=False,
+    )
+    # min_index_1, eps_min_1 = match(localize_minimals, index, repeat, eps)
+    # max_index_1, eps_max_1 = match(localize_maximals, index, repeat, eps)
+    t1 = time.monotonic() - s1
+    print(t1)
+
+    s1 = time.monotonic()
+    min_index_2, max_index_2, eps_min_2, eps_max_2 = v2_le(
+        index=index,
+        coincident=repeat,
+        eps=eps,
+        parallel=False,
+    )
+    t2 = time.monotonic() - s1
+    print(t2)
+
+    # print(np.sort(min_index_1))
+    # print(np.sort(min_index_2))
+
+    # print(np.sort(max_index_1))
+    # print(np.sort(max_index_2))
+
+    print(eps_min_1, eps_min_2)
+    print(eps_max_1, eps_max_2)
+
+    print(np.all(np.sort(min_index_1) == np.sort(min_index_2)))
+    print(np.all(np.sort(max_index_1) == np.sort(max_index_2)))
+
+    print(t1 / t2)
+
     # match = MatchesOnInputArray()
     # s2 = time.monotonic()
-    # min_1, min_eps = match(extremal_min, index, repeat, eps)
-    # max_1, max_eps = match(extremal_max, index, repeat, eps)
+    # min_1, min_eps = match(localize_minimals, index, repeat, eps)
+    # max_1, max_eps = match(localize_maximals, index, repeat, eps)
     # print(time.monotonic() - s2)
-    #
+
     # s3 = time.monotonic()
     # trend = SplitTrendDetection(values=data, test_size=size, coincident=match)
     # trend.search_extremum(repeat, eps)
     # print(time.monotonic() - s3)
-    #
+
     # print(sorted(min_1))
     # print(sorted(min_index))
+    # print(sorted(max_1))
+    # print(sorted(max_index))
     # print(sorted(trend.get_min_indexes()))
-    #
+
     # print(min_eps, eps_min)
     # print(max_eps, eps_max)
-    #
+
     # print(np.all(sorted(min_1) == sorted(min_index)))
     # print(np.all(sorted(min_index) == sorted(trend.get_min_indexes())))
     # print(np.all(sorted(max_1) == sorted(max_index)))
     # print(np.all(sorted(max_index) == sorted(trend.get_max_indexes())))
-    #
-
-def count_sort(value):
-    e = [0] * len(value)
-    for j in range(len(value)):
-        k = len(value) - 1
-        for i in range(j):
-            if value[j] >= value[i]:
-                k -= 1
-        for i in range(j + 1, len(value)):
-            if value[j] > value[i]:
-                k -= 1
-        e[k] = j
-    return e
 
 
 if __name__ == "__main__":
     main()
-    # np.random.seed(124)
-    # size = 20_000
-    # data = np.random.uniform(0, 5_000_000, size)
-    #
-    # index1 = np.zeros((size,), dtype=np.int64)
-    # s = time.monotonic()
-    # argsort(data, index1)
-    # print(time.monotonic() - s)
-    #
-    # s = time.monotonic()
-    # index2 = np.argsort(data, kind="mergesort")
-    # print(time.monotonic() - s)
-    # print(all(index1 == index2))
-
-    # s = time.monotonic()
-    # ext1 = extremal_max(index1, 1, True)
-    # print(time.monotonic() - s)
-    #
-    # s = time.monotonic()
-    # ext2 = max_extremum(index=index1, eps=1)
-    # print(time.monotonic() - s)
-    # print(all(ext1 == ext2))
-    # print(ext1)
-    # print(ext2)

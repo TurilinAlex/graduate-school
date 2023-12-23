@@ -1,1 +1,2 @@
-from .extremal cimport argsort, extremal_max, extremal_min, search_main_extremum
+from .extremum import localize_maximals, localize_minimals
+from .sort cimport argsort

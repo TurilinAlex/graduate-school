@@ -1,5 +1,5 @@
 import numpy as np
-from TradingMath.extremal import extremal_max, extremal_min
+from TradingMath.extremum import localize_minimals, localize_maximals
 
 from .base_trend_point import BaseTrendDetection
 from ..matches_extremum import BaseMatchesOnArray
@@ -29,10 +29,10 @@ class SplitTrendDetection(BaseTrendDetection):
     def _start_iteration(self, num_coincident: int, start_eps: int):
         _index = argsort(self._values)
         _max_indexes, _max_eps = self._matches(
-            extremal_max, index=_index, max_coincident=num_coincident, eps=start_eps
+            localize_maximals, index=_index, max_coincident=num_coincident, eps=start_eps
         )
         _min_indexes, _min_eps = self._matches(
-            extremal_min, index=_index, max_coincident=num_coincident, eps=start_eps
+            localize_minimals, index=_index, max_coincident=num_coincident, eps=start_eps
         )
 
         _max_values = self._values[_max_indexes]
@@ -65,10 +65,10 @@ class SplitTrendDetection(BaseTrendDetection):
         _index_min = argsort(self._last_min_values)
         _index_max = argsort(self._last_max_values)
         __max_index, _max_eps = self._matches(
-            extremal_max, index=_index_max, max_coincident=num_coincident, eps=start_eps
+            localize_maximals, index=_index_max, max_coincident=num_coincident, eps=start_eps
         )
         __min_index, _min_eps = self._matches(
-            extremal_min, index=_index_min, max_coincident=num_coincident, eps=start_eps
+            localize_minimals, index=_index_min, max_coincident=num_coincident, eps=start_eps
         )
 
         _max_values = self._last_max_values[__max_index]

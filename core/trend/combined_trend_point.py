@@ -1,5 +1,5 @@
 import numpy as np
-from TradingMath.extremal import extremal_max, extremal_min
+from TradingMath.extremum import localize_minimals, localize_maximals
 
 from .base_trend_point import BaseTrendDetection
 from ..matches_extremum import BaseMatchesOnArray
@@ -24,10 +24,10 @@ class CombinedTrendDetection(BaseTrendDetection):
     def _start_iteration(self, num_coincident: int, start_eps: int):
         _index = argsort(self._values)
         _max_indexes, _max_eps = self._matches(
-            extremal_max, index=_index, max_coincident=num_coincident, eps=start_eps
+            localize_maximals, index=_index, max_coincident=num_coincident, eps=start_eps
         )
         _min_indexes, _min_eps = self._matches(
-            extremal_min, index=_index, max_coincident=num_coincident, eps=start_eps
+            localize_minimals, index=_index, max_coincident=num_coincident, eps=start_eps
         )
         _max_values = self._values[_max_indexes]
         _min_values = self._values[_min_indexes]
@@ -52,10 +52,10 @@ class CombinedTrendDetection(BaseTrendDetection):
     def _continuation_iterations(self, num_coincident: int, start_eps: int):
         _index = argsort(self._last_values)
         __max_index, _max_eps = self._matches(
-            extremal_max, index=_index, max_coincident=num_coincident, eps=start_eps
+            localize_maximals, index=_index, max_coincident=num_coincident, eps=start_eps
         )
         __min_index, _min_eps = self._matches(
-            extremal_min, index=_index, max_coincident=num_coincident, eps=start_eps
+            localize_minimals, index=_index, max_coincident=num_coincident, eps=start_eps
         )
         _max_values = self._last_values[__max_index]
         _min_values = self._last_values[__min_index]

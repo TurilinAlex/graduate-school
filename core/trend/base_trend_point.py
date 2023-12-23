@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Protocol
 
 import numpy as np
-from TradingMath.extremal import extremal_min, extremal_max
+from TradingMath.extremum import localize_minimals, localize_maximals
 
 from ..matches_extremum import BaseMatchesOnArray
 from ..sort import argsort
@@ -170,7 +170,7 @@ class BaseTrendDetection(Protocol):
         after_iter: int | None = None,
     ):
         _index = argsort(values)
-        __min_index = np.sort(extremal_min(index=_index, eps=eps))
+        __min_index = np.sort(localize_minimals(index=_index, eps=eps))
         _min_values = values[__min_index]
         _min_indexes = indexes[__min_index]
 
@@ -198,7 +198,7 @@ class BaseTrendDetection(Protocol):
         after_iter: int | None = None,
     ):
         _index = argsort(values)
-        __max_index = np.sort(extremal_max(index=_index, eps=eps))
+        __max_index = np.sort(localize_maximals(index=_index, eps=eps))
         _max_values = values[__max_index]
         _max_indexes = indexes[__max_index]
 
