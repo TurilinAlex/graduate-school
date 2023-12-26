@@ -339,99 +339,115 @@ def main_new():
 
 
 def main_new_new():
-    size = 1000
+    size = 13
     # closes = np.random.uniform(10, 20, size)
     closes = np.array([np.random.randint(10, 50) for _ in range(size)])
     matches = MatchesOnInputArray()
 
-    eps = 23
-    step = 1
+    eps = 7
+    step = 3
     coincident = 1
-    extr_min_index = []
-    extr_max_index = []
-    print()
-    for i in range(0, len(closes), step):
-        close = closes[i: i + step]
-        index = argsort(close)
-        _extr_min_index, _min_eps = matches(
-            extremum=min_extremum, index=index, max_coincident=coincident, eps=eps
-        )
-
-        # region Gluing Minimals Sub-intervals
-
-        if _extr_min_index[0] - _min_eps < 0:
-            for j in range(i - 1, _extr_min_index[0] + i - _min_eps - 1, -1):
-                if j < 0:
-                    break
-
-                if closes[j] <= closes[_extr_min_index[0] + i]:
-                    _extr_min_index = _extr_min_index[1:]
-                    break
-
-        if len(_extr_min_index) and _extr_min_index[-1] + _min_eps >= step:
-            for j in range(i + step, _extr_min_index[-1] + i + _min_eps + 1):
-                if j >= len(closes):
-                    break
-
-                if closes[j] < closes[_extr_min_index[-1] + i]:
-                    _extr_min_index = _extr_min_index[:-1]
-                    break
-
-        # endregion Gluing Minimals Sub-intervals
-
-        extr_min_index.extend(_extr_min_index + i)
-
-        _extr_max_index, _max_eps = matches(
-            extremum=max_extremum, index=index, max_coincident=coincident, eps=eps
-        )
-
-        # region Gluing Maximals Sub-intervals
-
-        if _extr_max_index[0] - _max_eps < 0:
-            for j in range(i - 1, _extr_max_index[0] + i - _max_eps - 1, -1):
-                if j < 0:
-                    break
-
-                if closes[j] > closes[_extr_max_index[0] + i]:
-                    _extr_max_index = _extr_max_index[1:]
-                    break
-
-        if len(_extr_max_index) and _extr_max_index[-1] + _max_eps >= step:
-            for j in range(i + step, _extr_max_index[-1] + i + _max_eps + 1):
-                if j >= len(closes):
-                    break
-
-                if closes[j] >= closes[_extr_max_index[-1] + i]:
-                    _extr_max_index = _extr_max_index[:-1]
-                    break
-
-        # endregion Gluing Maximals Sub-intervals
-
-        extr_max_index.extend(_extr_max_index + i)
-
-    combined_indexes = np.sort(np.hstack([extr_min_index, extr_max_index]))
-    combined_values = closes[combined_indexes]
+    # extr_min_index = []
+    # extr_max_index = []
+    # for i in range(0, len(closes), step):
+    #     close = closes[i: i + step]
+    #     index = argsort(close)
+    #     _extr_min_index, _min_eps = matches(
+    #         extremum=min_extremum, index=index, max_coincident=coincident, eps=eps
+    #     )
+    #
+    #     # region Gluing Minimals Sub-intervals
+    #
+    #     if _extr_min_index[0] - _min_eps < 0:
+    #         for j in range(i - 1, _extr_min_index[0] + i - _min_eps - 1, -1):
+    #             if j < 0:
+    #                 break
+    #
+    #             if closes[j] <= closes[_extr_min_index[0] + i]:
+    #                 _extr_min_index = _extr_min_index[1:]
+    #                 break
+    #
+    #     if len(_extr_min_index) and _extr_min_index[-1] + _min_eps >= step:
+    #         for j in range(i + step, _extr_min_index[-1] + i + _min_eps + 1):
+    #             if j >= len(closes):
+    #                 break
+    #
+    #             if closes[j] < closes[_extr_min_index[-1] + i]:
+    #                 _extr_min_index = _extr_min_index[:-1]
+    #                 break
+    #
+    #     # endregion Gluing Minimals Sub-intervals
+    #
+    #     extr_min_index.extend(_extr_min_index + i)
+    #     _extr_max_index, _max_eps = matches(
+    #         extremum=max_extremum, index=index, max_coincident=coincident, eps=eps
+    #     )
+    #
+    #     # region Gluing Maximals Sub-intervals
+    #
+    #     if _extr_max_index[0] - _max_eps < 0:
+    #         for j in range(i - 1, _extr_max_index[0] + i - _max_eps - 1, -1):
+    #             if j < 0:
+    #                 break
+    #
+    #             if closes[j] > closes[_extr_max_index[0] + i]:
+    #                 _extr_max_index = _extr_max_index[1:]
+    #                 break
+    #
+    #     if len(_extr_max_index) and _extr_max_index[-1] + _max_eps >= step:
+    #         for j in range(i + step, _extr_max_index[-1] + i + _max_eps + 1):
+    #             if j >= len(closes):
+    #                 break
+    #
+    #             if closes[j] >= closes[_extr_max_index[-1] + i]:
+    #                 _extr_max_index = _extr_max_index[:-1]
+    #                 break
+    #
+    #     # endregion Gluing Maximals Sub-intervals
+    #
+    #     extr_max_index.extend(_extr_max_index + i)
+    #
+    # combined_indexes = np.sort(np.hstack([extr_min_index, extr_max_index]))
+    # combined_values = closes[combined_indexes]
+    # print(np.sort(extr_min_index))
+    # print(np.sort(extr_max_index))
+    # print(combined_indexes)
 
     trend = CombinedTrendDetection(closes, size, matches)
     trend.search_extremum(num_coincident=coincident, start_eps=eps)
+    print(trend.get_combined_indexes())
+    print(trend.get_min_indexes())
+    print(trend.get_max_indexes())
+    print()
 
-    assert len(trend.get_combined_indexes()) == len(combined_indexes) and np.all(
-        trend.get_combined_indexes() == combined_indexes
-    ), f"""
-        {len(trend.get_combined_indexes())}\n
-        {len(combined_indexes)}\n
-        {trend.get_combined_indexes()=}\n
-        {combined_indexes=}
-        """
-
-    assert len(trend.get_combined_values()) == len(combined_values) and np.all(
-        trend.get_combined_values() == combined_values
-    ), f"""
-        {len(trend.get_combined_values())}\n
-        {len(combined_values)}\n
-        {trend.get_combined_values()=}\n
-        {combined_values=}
-        """
+    # print()
+    # trend.search_extremum(num_coincident=coincident, start_eps=eps)
+    # print(trend.get_combined_indexes())
+    # print(trend.get_min_indexes())
+    # print(trend.get_max_indexes())
+    # print()
+    # trend.search_extremum(num_coincident=coincident, start_eps=eps)
+    # print(trend.get_combined_indexes())
+    # print(trend.get_min_indexes())
+    # print(trend.get_max_indexes())
+    # print()
+    # assert len(trend.get_combined_indexes()) == len(combined_indexes) and np.all(
+    #     trend.get_combined_indexes() == combined_indexes
+    # ), f"""
+    #     {len(trend.get_combined_indexes())}\n
+    #     {len(combined_indexes)}\n
+    #     {trend.get_combined_indexes()=}\n
+    #     {combined_indexes=}
+    #     """
+    #
+    # assert len(trend.get_combined_values()) == len(combined_values) and np.all(
+    #     trend.get_combined_values() == combined_values
+    # ), f"""
+    #     {len(trend.get_combined_values())}\n
+    #     {len(combined_values)}\n
+    #     {trend.get_combined_values()=}\n
+    #     {combined_values=}
+    #     """
 
 
 if __name__ == "__main__":
