@@ -1,9 +1,11 @@
-from operator import le, lt, gt, ge
+from operator import le, lt, ge, gt
 from typing import Callable
 
 import numpy as np
 from pydantic import BaseModel, Field
 
+from core import CombinedTrendDetection
+from core.matches_extremum import MatchesOnInputArray
 from core.sort import argsort
 
 np.random.seed(12222)
@@ -15,7 +17,7 @@ class Slice(BaseModel):
 
 
 class ExtremumAll(BaseModel):
-    index: np.ndarray = Field(default=np.empty((1,)))
+    index: np.ndarray = Field(default=np.array((1,)))
     slice: Slice = Field(default=Slice(begin=0, end=0))
 
     class Config:
@@ -23,17 +25,11 @@ class ExtremumAll(BaseModel):
 
 
 class ExtremumMin(ExtremumAll):
-    diff: np.ndarray = Field(default=np.empty((1,)))
-
-    class Config:
-        arbitrary_types_allowed = True
+    diff: np.ndarray = Field(default=np.array((1,)))
 
 
 class ExtremumMax(ExtremumAll):
-    diff: np.ndarray = Field(default=np.empty((1,)))
-
-    class Config:
-        arbitrary_types_allowed = True
+    diff: np.ndarray = Field(default=np.array((1,)))
 
 
 class ExtremumData(BaseModel):
@@ -49,34 +45,30 @@ class CombinedExtremum:
     def __init__(self, values: np.ndarray[float], split: int, batch: int = None):
         self._values = values[:split]
         self._batch = len(values) if batch is None else batch
-        self._len_values = len(values)
-        self._indexes = np.arange(0, self._len_values)
         self._ptr_extr: {int, ExtremumData} = {}
-        print(self._values)
-        self._num_intervals = 0
 
-        for i in range(0, self._len_values, self._batch):
-            self._num_intervals += 1
-            end = min(i + self._batch, self._len_values)
-            self._ptr_extr[i // self._batch] = ExtremumData(
+        _len_values = len(values)
+        for begin in range(0, _len_values, self._batch):
+            end = min(begin + self._batch, _len_values)
+            self._ptr_extr[begin // self._batch] = ExtremumData(
                 extr_all=ExtremumAll(
-                    index=np.arange(i, end),
+                    index=np.arange(begin, end),
                     slice=Slice(
-                        begin=i,
+                        begin=begin,
                         end=end,
                     ),
                 ),
                 extr_min=ExtremumMin(
-                    index=np.arange(i, end),
+                    index=np.arange(begin, end),
                     slice=Slice(
-                        begin=i,
+                        begin=begin,
                         end=end,
                     ),
                 ),
                 extr_max=ExtremumMax(
-                    index=np.arange(i, end),
+                    index=np.arange(begin, end),
                     slice=Slice(
-                        begin=i,
+                        begin=begin,
                         end=end,
                     ),
                 ),
@@ -84,16 +76,17 @@ class CombinedExtremum:
 
     def localization_extremes(self, coincident: int = 1, eps: int = 1) -> "CombinedExtremum":
 
-        for sub_interval, data in self._ptr_extr.items():
-            print("-------------------")
-            begin = data.extr_all.slice.begin
-            end = data.extr_all.slice.end
+        offset_all = 0
+        offset_min = 0
+        offset_max = 0
+        extr_all_index = []
 
-            _values = self._values[begin: end]
-            _indexes = argsort(_values)
+        for sub_interval, data in self._ptr_extr.items():
+            _offset = data.extr_all.slice.begin
+            end = _offset + len(data.extr_all.index)
 
             _marker_min, _marker_max = self._diff_between_sort_indexes(
-                _indexes=_indexes,
+                _values=self._values[_offset: end],
                 _sub_interval=sub_interval,
                 _eps=eps,
             )
@@ -108,33 +101,101 @@ class CombinedExtremum:
                 _coincident=coincident,
                 _eps=eps,
             )
-
-            self._filter_extremes(
-                _sub_interval=sub_interval,
+            _extr_all_index, _extr_min_index, _extr_max_index = self._filter_extremes(
+                _diff_min=data.extr_min.diff,
+                _diff_max=data.extr_max.diff,
+                _offset=_offset,
                 _eps_min=_eps_min,
                 _eps_max=_eps_max,
             )
-            print("-------------------")
-            print()
 
-        for _, data in self._ptr_extr.items():
-            print(data.extr_all.index, end=" ")
-        print()
-        for _, data in self._ptr_extr.items():
-            print(data.extr_min.index, end=" ")
-        print()
-        for _, data in self._ptr_extr.items():
-            print(data.extr_max.index, end=" ")
-        print()
+            extr_all_index.extend(_extr_all_index + _offset)
+
+            _extr_all_index = data.extr_all.index[_extr_all_index]
+            _extr_min_index = data.extr_all.index[_extr_min_index]
+            _extr_max_index = data.extr_all.index[_extr_max_index]
+
+            data.extr_all.index = _extr_all_index
+            data.extr_all.slice.begin = offset_all
+            data.extr_all.slice.end = offset_all + len(_extr_all_index)
+
+            data.extr_min.index = _extr_min_index
+            data.extr_min.slice.begin = offset_min
+            data.extr_min.slice.end = offset_min + len(_extr_min_index)
+
+            data.extr_max.index = _extr_max_index
+            data.extr_max.slice.begin = offset_max
+            data.extr_max.slice.end = offset_max + len(_extr_max_index)
+
+            data.eps_min = _eps_min
+            data.eps_max = _eps_max
+
+            offset_all = data.extr_all.slice.end
+            offset_min = data.extr_min.slice.end
+            offset_max = data.extr_max.slice.end
+
+        extr_all_index = np.array(extr_all_index)
+        self._values = self._values[extr_all_index]
 
         return self
 
+    def get_all_extremum(self, interval: int | None = None):
+
+        if interval is None:
+            return np.array(
+                [elem for _, data in self._ptr_extr.items() for elem in data.extr_all.index]
+            )
+        if isinstance(interval, int):
+            if self._ptr_extr.get(interval) is not None:
+                return np.array(
+                    [elem for elem in self._ptr_extr[interval].extr_all.index]
+                )
+            else:
+                print("Такого интервала нет!")
+        else:
+            print("Интервал не является числом!")
+
+    def get_min_extremum(self, interval: int | None = None):
+
+        if interval is None:
+            return np.array(
+                [elem for _, data in self._ptr_extr.items() for elem in data.extr_min.index]
+            )
+        if isinstance(interval, int):
+            if self._ptr_extr.get(interval) is not None:
+                return np.array(
+                    [elem for elem in self._ptr_extr[interval].extr_min.index]
+                )
+            else:
+                print("Такого интервала нет!")
+        else:
+            print("Интервал не является числом!")
+
+    def get_max_extremum(self, interval: int | None = None):
+
+        if interval is None:
+            return np.array(
+                [elem for _, data in self._ptr_extr.items() for elem in data.extr_max.index]
+            )
+        if isinstance(interval, int):
+            if self._ptr_extr.get(interval) is not None:
+                return np.array(
+                    [elem for elem in self._ptr_extr[interval].extr_max.index]
+                )
+            else:
+                print("Такого интервала нет!")
+        else:
+            print("Интервал не является числом!")
+
     def _diff_between_sort_indexes(
             self,
-            _indexes: np.ndarray,
+            _values: np.ndarray,
             _sub_interval: int,
             _eps: int = 1
     ) -> tuple[np.ndarray, np.ndarray]:
+
+        _indexes = argsort(_values)
+
         n = len(_indexes)
         self._ptr_extr[_sub_interval].extr_min.diff = np.empty_like(_indexes, dtype=np.uint32)
         self._ptr_extr[_sub_interval].extr_max.diff = np.empty_like(_indexes, dtype=np.uint32)
@@ -178,33 +239,36 @@ class CombinedExtremum:
 
         return marker_diff_for_minimal, marker_diff_for_maximal
 
-    def _filter_extremes(self, _sub_interval: int, _eps_min: int, _eps_max: int):
-        _batch = len(self._ptr_extr[_sub_interval].extr_all.index)
-        _extremes = np.zeros((len(self._ptr_extr[_sub_interval].extr_all.index),), dtype=int)
-        _extremes_min = np.zeros((len(self._ptr_extr[_sub_interval].extr_all.index),), dtype=int)
-        _extremes_max = np.zeros((len(self._ptr_extr[_sub_interval].extr_all.index),), dtype=int)
-
+    def _filter_extremes(
+            self,
+            _diff_min: np.ndarray,
+            _diff_max: np.ndarray,
+            _offset: int,
+            _eps_min: int,
+            _eps_max: int,
+    ):
+        _batch = len(_diff_min)
+        _extremes = np.empty_like(_diff_min)
+        _extremes_min = np.empty_like(_diff_min)
+        _extremes_max = np.empty_like(_diff_max)
         _k_all = 0
         _k_min = 0
         _k_max = 0
 
         for i in range(_batch):
-            is_min_extr = (self._ptr_extr[_sub_interval].extr_min.diff[i] > _eps_min or
-                           self._ptr_extr[_sub_interval].extr_min.diff[i] == _batch)
-            is_max_extr = (self._ptr_extr[_sub_interval].extr_max.diff[i] > _eps_max or
-                           self._ptr_extr[_sub_interval].extr_max.diff[i] == _batch)
+            is_min_extr = _diff_min[i] > _eps_min or _diff_min[i] == _batch
+            is_max_extr = _diff_max[i] > _eps_max or _diff_max[i] == _batch
 
             is_added = False
             if is_min_extr:
-                print("Min")
                 is_add_index = self._border_check(
                     left=le,
                     right=lt,
                     _extremum_index=i,
-                    _sub_interval=_sub_interval,
+                    _offset=_offset,
+                    _batch=_batch,
                     _eps=_eps_min,
                 )
-                print("Min ----", is_add_index)
 
                 if is_add_index:
                     _extremes[_k_all] = i
@@ -214,15 +278,14 @@ class CombinedExtremum:
                     is_added = True
 
             if is_max_extr and not is_added:
-                print("Max")
                 is_add_index = self._border_check(
                     left=gt,
                     right=ge,
                     _extremum_index=i,
-                    _sub_interval=_sub_interval,
+                    _offset=_offset,
+                    _batch=_batch,
                     _eps=_eps_max,
                 )
-                print("Max ----", is_add_index)
 
                 if is_add_index:
                     _extremes[_k_all] = i
@@ -230,98 +293,47 @@ class CombinedExtremum:
                     _k_all += 1
                     _k_max += 1
 
-        self._ptr_extr[_sub_interval].extr_all.index = (
-            self._ptr_extr[_sub_interval].extr_all.index[_extremes[:_k_all]]
-        )
-        self._ptr_extr[_sub_interval].extr_min.index = (
-            self._ptr_extr[_sub_interval].extr_min.index[_extremes_min[:_k_min]]
-        )
-        self._ptr_extr[_sub_interval].extr_max.index = (
-            self._ptr_extr[_sub_interval].extr_max.index[_extremes_max[:_k_max]]
-        )
+        _extremes = _extremes[:_k_all]
+        _extremes_min = _extremes_min[:_k_min]
+        _extremes_max = _extremes_max[:_k_max]
+
+        return _extremes, _extremes_min, _extremes_max
 
     def _border_check(
             self,
             left: Callable[[float, float], bool],
             right: Callable[[float, float], bool],
-            _extremum_index: int, _sub_interval: int, _eps: int
+            _extremum_index: int,
+            _offset: int,
+            _batch: int,
+            _eps: int,
     ) -> bool:
-        print("_________", _sub_interval)
         _left = True
         _right = True
-        _offset = self._ptr_extr[_sub_interval].extr_all.slice.begin
 
-        # region Gluing Minimals Sub-intervals
+        # region Gluing Sub-intervals
 
-        _left_count = self._ptr_extr[_sub_interval].extr_all.slice.begin
-        _left_sub_interval = _sub_interval
         if _extremum_index - _eps < 0:
-            while _left_sub_interval - 1 >= 0:
-                if not len(self._ptr_extr[_left_sub_interval - 1].extr_all.index):
-                    _left_count -= 1
-
-                if _left_count < _extremum_index - _eps - 1:
+            for i in range(_offset - 1, _extremum_index + _offset - _eps - 1, -1):
+                if i < 0:
                     break
 
-                for index in self._ptr_extr[_left_sub_interval - 1].extr_all.index[::-1]:
-                    _left_count -= 1
-                    print(
-                        "left",
-                        self._values[index],
-                        self._values[self._ptr_extr[_sub_interval].extr_all.index[_extremum_index]],
-                        self._ptr_extr[_sub_interval].extr_all.index[_extremum_index],
-                    )
-                    if left(
-                            self._values[index],
-                            self._values[self._ptr_extr[_sub_interval].extr_all.index[_extremum_index]]
-                    ):
-                        _left = False
-                        break
-                    if _left_count < _extremum_index - _eps - 1:
-                        break
-
-                else:
-                    _left_sub_interval -= 1
-                    continue
-
-                break
-
-        _right_count = self._ptr_extr[_sub_interval].extr_all.slice.end
-        _right_sub_interval = _sub_interval
-        if _extremum_index + _eps >= len(self._ptr_extr[_right_sub_interval].extr_all.index):
-            while _right_sub_interval + 1 < self._num_intervals:
-                if not len(self._ptr_extr[_right_sub_interval + 1].extr_all.index):
-                    _right_count += 1
-
-                if _right_count > _extremum_index + _eps + 1:
+                if left(self._values[i], self._values[_extremum_index + _offset]):
+                    _left = False
                     break
 
-                for index in self._ptr_extr[_right_sub_interval + 1].extr_all.index:
-                    print(
-                        "right",
-                        self._values[index],
-                        self._values[self._ptr_extr[_sub_interval].extr_all.index[_extremum_index]],
-                        self._ptr_extr[_sub_interval].extr_all.index[_extremum_index],
-                        index,
-                        _right_sub_interval + 1
-                    )
-                    _right_count += 1
-                    if right(
-                            self._values[index],
-                            self._values[self._ptr_extr[_sub_interval].extr_all.index[_extremum_index]]
-                    ):
-                        _right = False
-                        break
-                    if _right_count > _extremum_index + _eps + 1:
-                        break
+        if _extremum_index + _eps >= _batch:
+            for i in range(_offset + _batch, _extremum_index + _offset + _eps + 1):
+                if i >= len(self._values):
+                    break
 
-                else:
-                    _right_sub_interval += 1
-                    continue
-
-                break
+                if right(self._values[i], self._values[_extremum_index + _offset]):
+                    _right = False
+                    break
 
         return _left and _right
+
+        # endregion Gluing Sub-intervals
 
     @staticmethod
     def _select_eps(_marker_diff: np.ndarray, _coincident: int, _eps: int) -> int:
@@ -342,21 +354,66 @@ class CombinedExtremum:
                 last_non_zero_index = i
 
         _select_eps = last_non_zero_index + _coincident - 1
+
         return _select_eps
 
         # endregion Подбор эпсилон окрестности, зависящей от заданного количества совпадений
 
 
 def main():
-    size = 13
-    closes = np.array([np.random.randint(10, 50) for _ in range(size)])
+    size = 30000
+    closes = np.array([np.random.randint(-10000, 10000) for _ in range(size)])
 
-    eps = 7
-    step = 1
+    eps = 113
+    step = 10000
     coincident = 1
 
-    trend = CombinedExtremum(values=closes, split=size, batch=step)
-    trend.localization_extremes(coincident=coincident, eps=eps)
+    matches = MatchesOnInputArray()
+    trend_old = CombinedTrendDetection(closes, size, matches)
+    trend_new = CombinedExtremum(values=closes, split=size, batch=step)
+
+    for _ in range(2):
+        trend_old.search_extremum(num_coincident=coincident, start_eps=eps)
+        trend_new.localization_extremes(coincident=coincident, eps=eps)
+
+        assert len(trend_old.get_max_indexes()) == len(trend_new.get_max_extremum()), (
+            print(
+                f"Combined: old {len(trend_old.get_max_indexes())}, "
+                f"new {len(trend_new.get_max_extremum())}"
+            )
+        )
+        assert np.all(trend_old.get_max_indexes() == trend_new.get_max_extremum()), (
+            print(
+                f"Combined: old {trend_old.get_max_indexes()}, "
+                f"new {trend_new.get_max_extremum()}"
+            )
+        )
+
+        assert len(trend_old.get_min_indexes()) == len(trend_new.get_min_extremum()), (
+            print(
+                f"Combined: old {len(trend_old.get_min_indexes())}, "
+                f"new {len(trend_new.get_min_extremum())}"
+            )
+        )
+        assert np.all(trend_old.get_min_indexes() == trend_new.get_min_extremum()), (
+            print(
+                f"Combined: old {trend_old.get_min_indexes()}, "
+                f"new {trend_new.get_min_extremum()}"
+            )
+        )
+
+        assert len(trend_old.get_combined_indexes()) == len(trend_new.get_all_extremum()), (
+            print(
+                f"Combined: old {len(trend_old.get_combined_indexes())}, "
+                f"new {len(trend_new.get_all_extremum())}"
+            )
+        )
+        assert np.all(trend_old.get_combined_indexes() == trend_new.get_all_extremum()), (
+            print(
+                f"Combined: old {trend_old.get_combined_indexes()}, "
+                f"new {trend_new.get_all_extremum()}"
+            )
+        )
 
 
 if __name__ == '__main__':

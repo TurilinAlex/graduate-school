@@ -344,7 +344,7 @@ def main_new_new():
     closes = np.array([np.random.randint(10, 50) for _ in range(size)])
     matches = MatchesOnInputArray()
 
-    eps = 7
+    eps = 1
     step = 3
     coincident = 1
     # extr_min_index = []
@@ -418,8 +418,12 @@ def main_new_new():
     print(trend.get_combined_indexes())
     print(trend.get_min_indexes())
     print(trend.get_max_indexes())
-    print()
-
+    # print()
+    # trend.search_extremum(num_coincident=coincident, start_eps=2)
+    # print(trend.get_combined_indexes())
+    # print(trend.get_min_indexes())
+    # print(trend.get_max_indexes())
+    # print()
     # print()
     # trend.search_extremum(num_coincident=coincident, start_eps=eps)
     # print(trend.get_combined_indexes())
