@@ -16,7 +16,7 @@ class Slice(BaseModel):
     end: int
 
 
-class ExtremumAll(BaseModel):
+class ExtremesAll(BaseModel):
     index: np.ndarray = Field(default=np.array((1,)))
     slice: Slice = Field(default=Slice(begin=0, end=0))
 
@@ -24,48 +24,72 @@ class ExtremumAll(BaseModel):
         arbitrary_types_allowed = True
 
 
-class ExtremumMin(ExtremumAll):
+class ExtremesMin(ExtremesAll):
     diff: np.ndarray = Field(default=np.array((1,)))
 
 
-class ExtremumMax(ExtremumAll):
+class ExtremesMax(ExtremesAll):
     diff: np.ndarray = Field(default=np.array((1,)))
 
 
-class ExtremumData(BaseModel):
-    extr_all: ExtremumAll
-    extr_min: ExtremumMin
-    extr_max: ExtremumMax
+class ExtremesData(BaseModel):
+    extr_all: ExtremesAll
+    extr_min: ExtremesMin
+    extr_max: ExtremesMax
     eps_min: int = Field(default=1)
     eps_max: int = Field(default=1)
 
 
-class CombinedExtremum:
+def select_eps(_marker_diff: np.ndarray, _coincident: int, _eps: int) -> int:
+
+    # region Подбор эпсилон окрестности, зависящей от заданного количества совпадений
+
+    count_zero = 0
+    last_non_zero_index = _eps
+    for i in range(_eps + 1, len(_marker_diff)):
+        if count_zero >= _coincident - 1:
+            _select_eps = last_non_zero_index + _coincident - 1
+            return _select_eps
+
+        if _marker_diff[i] == 0:
+            count_zero += 1
+        else:
+            count_zero = 0
+            last_non_zero_index = i
+
+    _select_eps = last_non_zero_index + _coincident - 1
+
+    return _select_eps
+
+    # endregion Подбор эпсилон окрестности, зависящей от заданного количества совпадений
+
+
+class CombinedExtremes:
 
     def __init__(self, values: np.ndarray[float], split: int, batch: int = None):
         self._values = values[:split]
         self._batch = len(values) if batch is None else batch
-        self._ptr_extr: {int, ExtremumData} = {}
+        self._ptr_extr: {int, ExtremesData} = {}
 
         _len_values = len(values)
         for begin in range(0, _len_values, self._batch):
             end = min(begin + self._batch, _len_values)
-            self._ptr_extr[begin // self._batch] = ExtremumData(
-                extr_all=ExtremumAll(
+            self._ptr_extr[begin // self._batch] = ExtremesData(
+                extr_all=ExtremesAll(
                     index=np.arange(begin, end),
                     slice=Slice(
                         begin=begin,
                         end=end,
                     ),
                 ),
-                extr_min=ExtremumMin(
+                extr_min=ExtremesMin(
                     index=np.arange(begin, end),
                     slice=Slice(
                         begin=begin,
                         end=end,
                     ),
                 ),
-                extr_max=ExtremumMax(
+                extr_max=ExtremesMax(
                     index=np.arange(begin, end),
                     slice=Slice(
                         begin=begin,
@@ -74,7 +98,7 @@ class CombinedExtremum:
                 ),
             )
 
-    def localization_extremes(self, coincident: int = 1, eps: int = 1) -> "CombinedExtremum":
+    def localization_extremes(self, coincident: int = 1, eps: int = 1) -> "CombinedExtremes":
 
         offset_all = 0
         offset_min = 0
@@ -91,12 +115,12 @@ class CombinedExtremum:
                 _eps=eps,
             )
 
-            _eps_min = self._select_eps(
+            _eps_min = select_eps(
                 _marker_diff=_marker_min,
                 _coincident=coincident,
                 _eps=eps,
             )
-            _eps_max = self._select_eps(
+            _eps_max = select_eps(
                 _marker_diff=_marker_max,
                 _coincident=coincident,
                 _eps=eps,
@@ -104,9 +128,9 @@ class CombinedExtremum:
             _extr_all_index, _extr_min_index, _extr_max_index = self._filter_extremes(
                 _diff_min=data.extr_min.diff,
                 _diff_max=data.extr_max.diff,
-                _offset=_offset,
                 _eps_min=_eps_min,
                 _eps_max=_eps_max,
+                _offset=_offset,
             )
 
             extr_all_index.extend(_extr_all_index + _offset)
@@ -138,54 +162,6 @@ class CombinedExtremum:
         self._values = self._values[extr_all_index]
 
         return self
-
-    def get_all_extremum(self, interval: int | None = None):
-
-        if interval is None:
-            return np.array(
-                [elem for _, data in self._ptr_extr.items() for elem in data.extr_all.index]
-            )
-        if isinstance(interval, int):
-            if self._ptr_extr.get(interval) is not None:
-                return np.array(
-                    [elem for elem in self._ptr_extr[interval].extr_all.index]
-                )
-            else:
-                print("Такого интервала нет!")
-        else:
-            print("Интервал не является числом!")
-
-    def get_min_extremum(self, interval: int | None = None):
-
-        if interval is None:
-            return np.array(
-                [elem for _, data in self._ptr_extr.items() for elem in data.extr_min.index]
-            )
-        if isinstance(interval, int):
-            if self._ptr_extr.get(interval) is not None:
-                return np.array(
-                    [elem for elem in self._ptr_extr[interval].extr_min.index]
-                )
-            else:
-                print("Такого интервала нет!")
-        else:
-            print("Интервал не является числом!")
-
-    def get_max_extremum(self, interval: int | None = None):
-
-        if interval is None:
-            return np.array(
-                [elem for _, data in self._ptr_extr.items() for elem in data.extr_max.index]
-            )
-        if isinstance(interval, int):
-            if self._ptr_extr.get(interval) is not None:
-                return np.array(
-                    [elem for elem in self._ptr_extr[interval].extr_max.index]
-                )
-            else:
-                print("Такого интервала нет!")
-        else:
-            print("Интервал не является числом!")
 
     def _diff_between_sort_indexes(
             self,
@@ -257,14 +233,11 @@ class CombinedExtremum:
 
         for i in range(_batch):
             is_min_extr = _diff_min[i] > _eps_min or _diff_min[i] == _batch
-            is_max_extr = _diff_max[i] > _eps_max or _diff_max[i] == _batch
-
-            is_added = False
             if is_min_extr:
                 is_add_index = self._border_check(
                     left=le,
                     right=lt,
-                    _extremum_index=i,
+                    _extremes_index=i,
                     _offset=_offset,
                     _batch=_batch,
                     _eps=_eps_min,
@@ -275,13 +248,14 @@ class CombinedExtremum:
                     _extremes_min[_k_min] = i
                     _k_all += 1
                     _k_min += 1
-                    is_added = True
+                    continue
 
-            if is_max_extr and not is_added:
+            is_max_extr = _diff_max[i] > _eps_max or _diff_max[i] == _batch
+            if is_max_extr:
                 is_add_index = self._border_check(
                     left=gt,
                     right=ge,
-                    _extremum_index=i,
+                    _extremes_index=i,
                     _offset=_offset,
                     _batch=_batch,
                     _eps=_eps_max,
@@ -303,7 +277,7 @@ class CombinedExtremum:
             self,
             left: Callable[[float, float], bool],
             right: Callable[[float, float], bool],
-            _extremum_index: int,
+            _extremes_index: int,
             _offset: int,
             _batch: int,
             _eps: int,
@@ -313,21 +287,21 @@ class CombinedExtremum:
 
         # region Gluing Sub-intervals
 
-        if _extremum_index - _eps < 0:
-            for i in range(_offset - 1, _extremum_index + _offset - _eps - 1, -1):
+        if _extremes_index - _eps < 0:
+            for i in range(_offset - 1, _extremes_index + _offset - _eps - 1, -1):
                 if i < 0:
                     break
 
-                if left(self._values[i], self._values[_extremum_index + _offset]):
+                if left(self._values[i], self._values[_extremes_index + _offset]):
                     _left = False
                     break
 
-        if _extremum_index + _eps >= _batch:
-            for i in range(_offset + _batch, _extremum_index + _offset + _eps + 1):
+        if _extremes_index + _eps >= _batch:
+            for i in range(_offset + _batch, _extremes_index + _offset + _eps + 1):
                 if i >= len(self._values):
                     break
 
-                if right(self._values[i], self._values[_extremum_index + _offset]):
+                if right(self._values[i], self._values[_extremes_index + _offset]):
                     _right = False
                     break
 
@@ -335,29 +309,33 @@ class CombinedExtremum:
 
         # endregion Gluing Sub-intervals
 
-    @staticmethod
-    def _select_eps(_marker_diff: np.ndarray, _coincident: int, _eps: int) -> int:
+    def get_all_extremes(self, interval: int | None = None):
 
-        # region Подбор эпсилон окрестности, зависящей от заданного количества совпадений
+        return self.__prepare_extr(attr="extr_all", interval=interval)
 
-        count_zero = 0
-        last_non_zero_index = _eps
-        for i in range(_eps + 1, len(_marker_diff)):
-            if count_zero >= _coincident - 1:
-                _select_eps = last_non_zero_index + _coincident - 1
-                return _select_eps
+    def get_min_extremes(self, interval: int | None = None):
 
-            if _marker_diff[i] == 0:
-                count_zero += 1
+        return self.__prepare_extr(attr="extr_min", interval=interval)
+
+    def get_max_extremes(self, interval: int | None = None):
+
+        return self.__prepare_extr(attr="extr_max", interval=interval)
+
+    def __prepare_extr(self, attr: str, interval: int | None):
+
+        if interval is None:
+            return np.array(
+                [elem for _, data in self._ptr_extr.items() for elem in getattr(data, attr).index]
+            )
+        if isinstance(interval, int):
+            if self._ptr_extr.get(interval) is not None:
+                return np.array(
+                    [elem for elem in getattr(self._ptr_extr[interval], attr).index]
+                )
             else:
-                count_zero = 0
-                last_non_zero_index = i
-
-        _select_eps = last_non_zero_index + _coincident - 1
-
-        return _select_eps
-
-        # endregion Подбор эпсилон окрестности, зависящей от заданного количества совпадений
+                print("Такого интервала нет!")
+        else:
+            print("Интервал не является числом!")
 
 
 def main():
@@ -370,48 +348,48 @@ def main():
 
     matches = MatchesOnInputArray()
     trend_old = CombinedTrendDetection(closes, size, matches)
-    trend_new = CombinedExtremum(values=closes, split=size, batch=step)
+    trend_new = CombinedExtremes(values=closes, split=size, batch=step)
 
     for _ in range(2):
         trend_old.search_extremum(num_coincident=coincident, start_eps=eps)
         trend_new.localization_extremes(coincident=coincident, eps=eps)
 
-        assert len(trend_old.get_max_indexes()) == len(trend_new.get_max_extremum()), (
+        assert len(trend_old.get_max_indexes()) == len(trend_new.get_max_extremes()), (
             print(
                 f"Combined: old {len(trend_old.get_max_indexes())}, "
-                f"new {len(trend_new.get_max_extremum())}"
+                f"new {len(trend_new.get_max_extremes())}"
             )
         )
-        assert np.all(trend_old.get_max_indexes() == trend_new.get_max_extremum()), (
+        assert np.all(trend_old.get_max_indexes() == trend_new.get_max_extremes()), (
             print(
                 f"Combined: old {trend_old.get_max_indexes()}, "
-                f"new {trend_new.get_max_extremum()}"
+                f"new {trend_new.get_max_extremes()}"
             )
         )
 
-        assert len(trend_old.get_min_indexes()) == len(trend_new.get_min_extremum()), (
+        assert len(trend_old.get_min_indexes()) == len(trend_new.get_min_extremes()), (
             print(
                 f"Combined: old {len(trend_old.get_min_indexes())}, "
-                f"new {len(trend_new.get_min_extremum())}"
+                f"new {len(trend_new.get_min_extremes())}"
             )
         )
-        assert np.all(trend_old.get_min_indexes() == trend_new.get_min_extremum()), (
+        assert np.all(trend_old.get_min_indexes() == trend_new.get_min_extremes()), (
             print(
                 f"Combined: old {trend_old.get_min_indexes()}, "
-                f"new {trend_new.get_min_extremum()}"
+                f"new {trend_new.get_min_extremes()}"
             )
         )
 
-        assert len(trend_old.get_combined_indexes()) == len(trend_new.get_all_extremum()), (
+        assert len(trend_old.get_combined_indexes()) == len(trend_new.get_all_extremes()), (
             print(
                 f"Combined: old {len(trend_old.get_combined_indexes())}, "
-                f"new {len(trend_new.get_all_extremum())}"
+                f"new {len(trend_new.get_all_extremes())}"
             )
         )
-        assert np.all(trend_old.get_combined_indexes() == trend_new.get_all_extremum()), (
+        assert np.all(trend_old.get_combined_indexes() == trend_new.get_all_extremes()), (
             print(
                 f"Combined: old {trend_old.get_combined_indexes()}, "
-                f"new {trend_new.get_all_extremum()}"
+                f"new {trend_new.get_all_extremes()}"
             )
         )
 
