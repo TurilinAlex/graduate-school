@@ -126,9 +126,9 @@ class CombinedExtremes:
 
     def localization_extremes(self, coincident: int = 1, eps: int = 1) -> "CombinedExtremes":
 
-        offset_all = 0
-        offset_min = 0
-        offset_max = 0
+        offset_all = self._ptr_extr[0].extr_all.slice.begin
+        offset_min = self._ptr_extr[0].extr_min.slice.begin
+        offset_max = self._ptr_extr[0].extr_max.slice.begin
 
         self._update_values()
 
