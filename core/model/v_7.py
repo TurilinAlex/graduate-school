@@ -508,11 +508,11 @@ class Extremes:
 
 
 def main():
-    size = 1300
+    size = 13
     closes = np.array([np.random.randint(10, 50) for _ in range(size)])
 
-    eps = 27
-    step = 100
+    eps = 1
+    step = 3
     coincident = 1
 
     matches = MatchesOnInputArray()
@@ -527,8 +527,7 @@ def main():
 
         min_indexes, min_values = trend_new.min_trend_identification(eps=2)
         max_indexes, max_values = trend_new.max_trend_identification(eps=2)
-        print(min_indexes, trend_old.get_trend_indexes_by_min())
-        print(max_indexes, trend_old.get_trend_indexes_by_max())
+        print(trend_old.get_combined_indexes(), trend_new.get_combined_indexes())
         plt.scatter(trend_new.get_combined_indexes(), trend_new.get_combined_values(), s=50)
         plt.scatter(min_indexes, min_values, s=150, color="red")
         plt.scatter(max_indexes, max_values, s=150, color="yellow")
