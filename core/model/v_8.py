@@ -1,9 +1,11 @@
+import copy
 from dataclasses import dataclass
 from operator import le, lt, gt, ge
 from typing import Type, Callable
 
 import numpy as np
 
+from core.extremum import min_extremum, max_extremum
 from core.sort import argsort
 
 
@@ -170,8 +172,6 @@ class ExtremesContainer:
 class MetaExtremes(type):
     _storage: list[ExtremesContainer] = []
     _current_iter: int = 0
-    _values_all: np.ndarray[float]
-    len_all_values: int = 0
 
     @classmethod
     def __len__(cls):
@@ -203,6 +203,8 @@ class ExtremesStorage(metaclass=MetaExtremes):
     offset_max: int = 0
 
     split_index: int = 0
+    values_all: np.ndarray[float]
+    len_all_values: int = 0
 
     @classmethod
     def add(cls, container: ExtremesContainer):
@@ -213,7 +215,7 @@ class ExtremesStorage(metaclass=MetaExtremes):
     def search_extremes(cls, item: int | slice | None = None, coincident: int = 1, eps: int = 1):
 
         cls.__update_values()
-        cls.__parse_container(item=item)
+        cls.__set_start_offset(item=item)
 
         if item is None:
             for container in ExtremesStorage:
@@ -352,7 +354,7 @@ class ExtremesStorage(metaclass=MetaExtremes):
         return i, j
 
     @classmethod
-    def __parse_container(cls, item: int | slice | None = None) -> None:
+    def __set_start_offset(cls, item: int | slice | None = None) -> None:
         if item is None:
             cls.offset_all = cls[0].extr_all.begin
             cls.offset_min = cls[0].extr_min.begin
@@ -376,7 +378,7 @@ class ExtremesStorage(metaclass=MetaExtremes):
         cls.len_all_values = 0
         for data in cls._storage:
             if data.is_update:
-                data.values = cls._values_all[data.indexes]
+                data.values = cls.values_all[data.indexes]
             cls.len_all_values += len(data.values)
 
 
@@ -420,17 +422,175 @@ def select_eps(_marker_diff: np.ndarray, _coincident: int, _eps: int) -> int:
     # endregion Selection of an epsilon neighborhood depending on a given number of matches
 
 
+class ExtremesSaveState:
+
+    def __init__(self):
+        self.__states: {int, Type[ExtremesStorage]} = {}
+        self.__states_iter: int = 0
+
+    def save(self, storage: Type[ExtremesStorage]):
+        self.__states[self.__states_iter] = copy.deepcopy(storage)
+        self.__states_iter += 1
+
+    def search_trend_points(
+            self, eps: int, after_iter: int | None = None, item: int | slice | None = None
+    ) -> tuple[np.ndarray[np.uint32], np.ndarray[np.uint32]]:
+
+        min_trend_points = self.search_min_trend_points(eps=eps, after_iter=after_iter, item=item)
+        max_trend_points = self.search_max_trend_points(eps=eps, after_iter=after_iter, item=item)
+
+        return min_trend_points, max_trend_points
+
+    def search_min_trend_points(
+            self, eps: int, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        if after_iter is None:
+            after_iter = self.__states_iter - 1
+
+        _min_extremes_indexes = self.get_min_indexes(after_iter=after_iter, item=item)
+        _temp_min_extremes_indexes = argsort(_min_extremes_indexes)
+        _temp_min_trend_points = min_extremum(index=_temp_min_extremes_indexes, eps=eps)
+
+        min_trend_points = _min_extremes_indexes[_temp_min_trend_points]
+
+        return min_trend_points
+
+    def search_max_trend_points(
+            self, eps: int, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        if after_iter is None:
+            after_iter = self.__states_iter - 1
+
+        _max_extremes_indexes = self.get_max_indexes(after_iter=after_iter, item=item)
+        _temp_max_extremes_indexes = argsort(_max_extremes_indexes)
+        _temp_max_trend_points = max_extremum(index=_temp_max_extremes_indexes, eps=eps)
+
+        max_trend_points = _max_extremes_indexes[_temp_max_trend_points]
+
+        return max_trend_points
+
+        # region Other
+
+    def get_split_index(self) -> int:
+        _storage: Type[ExtremesStorage] = self.__states[0]
+        return _storage.split_index
+
+    def get_all_values(self) -> np.ndarray[np.float32]:
+        _storage: Type[ExtremesStorage] = self.__states[0]
+        return _storage.values_all
+
+    def get_current_iter(self) -> int:
+        return self.__states_iter
+
+    # endregion Other
+
+    # region Extremum
+
+    def get_combined_indexes(
+            self, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        return self.__extract_indexes(attr="extr_all", after_iter=after_iter, item=item)
+
+    def get_combined_values(
+            self, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        return self.__extract_values(attr="extr_all", after_iter=after_iter, item=item)
+
+    def get_min_indexes(
+            self, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        return self.__extract_indexes(attr="extr_min", after_iter=after_iter, item=item)
+
+    def get_min_values(
+            self, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        return self.__extract_values(attr="extr_min", after_iter=after_iter, item=item)
+
+    def get_max_indexes(
+            self, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        return self.__extract_indexes(attr="extr_max", after_iter=after_iter, item=item)
+
+    def get_max_values(
+            self, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+
+        return self.__extract_values(attr="extr_max", after_iter=after_iter, item=item)
+
+    # endregion Extremum
+
+    # region Private
+
+    def __extract_values(
+            self, attr: str, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+        if after_iter is None:
+            after_iter = self.__states_iter - 1
+
+        _stages = self.__parse_storage(after_iter, item)
+
+        _temp = []
+        for container in _stages:
+            _temp.extend(_stages.values_all[getattr(container, attr).indexes])
+        return np.array(_temp)
+
+    def __extract_indexes(
+            self, attr: str, after_iter: int | None = None, item: int | slice | None = None
+    ) -> np.ndarray[np.uint32]:
+        if after_iter is None:
+            after_iter = self.__states_iter - 1
+
+        _stages = self.__parse_storage(after_iter, item)
+
+        _temp = []
+        for container in _stages:
+            _temp.extend(getattr(container, attr).indexes)
+        return np.array(_temp)
+
+    def __parse_storage(
+            self, after_iter: int, item: int | slice | None = None
+    ) -> Type[ExtremesStorage] | list[ExtremesStorage]:
+        if item is None:
+            return self.__states[after_iter]
+
+        if isinstance(item, int):
+            return [self.__states[after_iter][item]]
+
+        if isinstance(item, slice):
+            return self.__states[after_iter][item]
+
+    # endregion Private
+
+
 def main():
     size = 13
     step = 3
     values = np.array([np.random.randint(10, 50) for _ in range(size)])
-
+    print(np.arange(size))
     print(values)
+    print()
 
     build(ExtremesStorage, values, size, step)
-    ExtremesStorage.search_extremes()
-    for container in ExtremesStorage:
-        print(container.extr_all.indexes)
+    extremes_stages = ExtremesSaveState()
+    ExtremesStorage.search_extremes(coincident=1, eps=1)
+    extremes_stages.save(ExtremesStorage)
+
+    print(extremes_stages.get_combined_indexes())
+    print(extremes_stages.get_combined_values())
+    print()
+
+    ExtremesStorage.search_extremes(coincident=1, eps=2)
+    extremes_stages.save(ExtremesStorage)
+
+    print(extremes_stages.get_combined_indexes())
+    print(extremes_stages.get_combined_values())
 
 
 if __name__ == '__main__':
