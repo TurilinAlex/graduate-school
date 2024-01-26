@@ -10,6 +10,13 @@ from core.sort import argsort
 
 
 @dataclass
+class Values:
+    all: np.ndarray[float]
+    min: np.ndarray[float]
+    max: np.ndarray[float]
+
+
+@dataclass
 class ExtremesAll:
     indexes: np.ndarray[int]
     begin: int
@@ -39,28 +46,16 @@ class ExtremesContainer:
         self.is_update: bool = False
         self.sub_interval: int = sub_interval
 
-        self._values: np.ndarray[float] = values
-
         self.extr_all: ExtremesAll = ExtremesAll(indexes=indexes, begin=begin, end=end)
         self.extr_min: ExtremesMin = ExtremesMin(indexes=indexes, begin=begin, end=end)
         self.extr_max: ExtremesMax = ExtremesMax(indexes=indexes, begin=begin, end=end)
+        self.values: Values = Values(all=values, min=values, max=values)
 
         self._diff_min: np.ndarray[int] | None = None
         self._diff_max: np.ndarray[int] | None = None
 
-        self._trend_min: np.ndarray[int] | None = None
-        self._trend_max: np.ndarray[int] | None = None
-
         self._eps_min: int | None = None
         self._eps_max: int | None = None
-
-    @property
-    def values(self) -> np.ndarray[float]:
-        return self._values
-
-    @values.setter
-    def values(self, values: np.ndarray[float]):
-        self._values = values
 
     @property
     def indexes(self) -> np.ndarray[float]:
@@ -114,7 +109,7 @@ class ExtremesContainer:
 
     def _diff_between_sort_indexes(self, eps: int = 1) -> tuple[np.ndarray, np.ndarray]:
 
-        _indexes = argsort(self._values)
+        _indexes = argsort(self.values.all)
 
         n = len(_indexes)
         self._diff_min = np.empty_like(_indexes, dtype=np.uint32)
@@ -162,7 +157,7 @@ class ExtremesContainer:
     def __repr__(self):
         return (
             f"{self.sub_interval}: (V: "
-            f"{self._values}; I: "
+            f"{self.values}; I: "
             f"{self.extr_all.indexes}; ["
             f"{self.extr_all.begin}, "
             f"{self.extr_all.end}])"
@@ -209,7 +204,7 @@ class ExtremesStorage(metaclass=MetaExtremes):
     @classmethod
     def add(cls, container: ExtremesContainer):
         cls._storage.append(container)
-        cls.len_all_values += len(container.values)
+        cls.len_all_values += len(container.values.all)
 
     @classmethod
     def search_extremes(cls, item: int | slice | None = None, coincident: int = 1, eps: int = 1):
@@ -307,7 +302,7 @@ class ExtremesStorage(metaclass=MetaExtremes):
         _left = True
         _right = True
 
-        _i_extr, _j_extr = cls.unravel_index((_extremes_index + _offset))
+        _i_extr, _j_extr = cls.unravel_index_all((_extremes_index + _offset))
 
         # region Gluing Sub-intervals
 
@@ -315,10 +310,10 @@ class ExtremesStorage(metaclass=MetaExtremes):
             for i in range(_offset - 1, _extremes_index + _offset - _eps - 1, -1):
                 if i < 0:
                     break
-                _i, _j = cls.unravel_index(i)
+                _i, _j = cls.unravel_index_all(i)
                 if left(
-                        ExtremesStorage[_i].values[_j],
-                        ExtremesStorage[_i_extr].values[_j_extr]
+                        ExtremesStorage[_i].values.all[_j],
+                        ExtremesStorage[_i_extr].values.all[_j_extr]
                 ):
                     _left = False
                     break
@@ -328,10 +323,10 @@ class ExtremesStorage(metaclass=MetaExtremes):
                 if i >= ExtremesStorage.len_all_values:
                     break
 
-                _i, _j = cls.unravel_index(i)
+                _i, _j = cls.unravel_index_all(i)
                 if right(
-                        ExtremesStorage[_i].values[_j],
-                        ExtremesStorage[_i_extr].values[_j_extr]
+                        ExtremesStorage[_i].values.all[_j],
+                        ExtremesStorage[_i_extr].values.all[_j_extr]
                 ):
                     _right = False
                     break
@@ -341,16 +336,42 @@ class ExtremesStorage(metaclass=MetaExtremes):
         # endregion Gluing Sub-intervals
 
     @classmethod
-    def unravel_index(cls, index):
+    def unravel_index_all(cls, index):
         i = 0
         size = 0
         while size < len(cls) - 1:
-            index -= len(cls[i].values)
+            index -= len(cls[i].values.all)
             if index < 0:
                 break
             i += 1
             size += 1
-        j = index % len(cls[i].values) if len(cls[i].values) else 0
+        j = index % len(cls[i].values.all) if len(cls[i].values.all) else 0
+        return i, j
+
+    @classmethod
+    def unravel_index_min(cls, index):
+        i = 0
+        size = 0
+        while size < len(cls) - 1:
+            index -= len(cls[i].values.min)
+            if index < 0:
+                break
+            i += 1
+            size += 1
+        j = index % len(cls[i].values.min) if len(cls[i].values.min) else 0
+        return i, j
+
+    @classmethod
+    def unravel_index_max(cls, index):
+        i = 0
+        size = 0
+        while size < len(cls) - 1:
+            index -= len(cls[i].values.max)
+            if index < 0:
+                break
+            i += 1
+            size += 1
+        j = index % len(cls[i].values.max) if len(cls[i].values.max) else 0
         return i, j
 
     @classmethod
@@ -378,8 +399,8 @@ class ExtremesStorage(metaclass=MetaExtremes):
         cls.len_all_values = 0
         for data in cls._storage:
             if data.is_update:
-                data.values = cls.values_all[data.indexes]
-            cls.len_all_values += len(data.values)
+                data.values.all = cls.values_all[data.indexes]
+            cls.len_all_values += len(data.values.all)
 
 
 def build(storage: Type[ExtremesStorage], values: np.ndarray[float], split: int, batch: int):
@@ -579,7 +600,7 @@ def main():
 
     build(ExtremesStorage, values, size, step)
     extremes_stages = ExtremesSaveState()
-    ExtremesStorage.search_extremes(coincident=1, eps=1)
+    ExtremesStorage.search_extremes(coincident=1, eps=2)
     extremes_stages.save(ExtremesStorage)
 
     print(extremes_stages.get_combined_indexes())
