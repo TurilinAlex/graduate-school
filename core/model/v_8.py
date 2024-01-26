@@ -57,10 +57,6 @@ class ExtremesContainer:
         self._eps_min: int | None = None
         self._eps_max: int | None = None
 
-    @property
-    def indexes(self) -> np.ndarray[float]:
-        return self.extr_all.indexes
-
     def search_extremes(self, coincident: int, eps: int):
         self.is_update = True
         _offset = self.extr_all.begin
@@ -399,7 +395,7 @@ class ExtremesStorage(metaclass=MetaExtremes):
         cls.len_all_values = 0
         for data in cls._storage:
             if data.is_update:
-                data.values.all = cls.values_all[data.indexes]
+                data.values.all = cls.values_all[data.extr_all.indexes]
             cls.len_all_values += len(data.values.all)
 
 
