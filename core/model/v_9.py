@@ -443,7 +443,7 @@ class ExtremeStorage:
     def __init__(self):
         self._storage: list[ExtremesContainer] = []
         self._save_storage: {int, {str, TrendData | int}} = {}
-        self._save_storage_curren_num: int = 0
+        self._save_storage_current_num: int = 0
         self._current_iter = 0
 
         self._split_index: int | None = None
@@ -761,12 +761,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -790,12 +790,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -819,12 +819,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -848,12 +848,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.float32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -877,12 +877,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -906,12 +906,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.float32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -935,12 +935,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -964,12 +964,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -997,12 +997,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1026,12 +1026,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1055,12 +1055,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1084,12 +1084,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.float32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1113,12 +1113,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1142,12 +1142,12 @@ class ExtremeStorage:
     ) -> np.ndarray[np.float32]:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1171,12 +1171,12 @@ class ExtremeStorage:
     ) -> int:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1200,12 +1200,12 @@ class ExtremeStorage:
     ) -> int:
 
         if after_iter is None:
-            after_iter = self._save_storage_curren_num
+            after_iter = self._save_storage_current_num
         elif isinstance(after_iter, int):
-            if 0 >= after_iter > self._save_storage_curren_num:
+            if 0 >= after_iter > self._save_storage_current_num:
                 raise IndexError(
                     f"After iteration {after_iter}. "
-                    f"This is incorrect num. Current num: {self._save_storage_curren_num}"
+                    f"This is incorrect num. Current num: {self._save_storage_current_num}"
                 )
 
         if isinstance(item, int):
@@ -1228,10 +1228,10 @@ class ExtremeStorage:
         return self._split_index
 
     def get_current_iter(self) -> int:
-        return self._save_storage_curren_num
+        return self._save_storage_current_num
 
     def save_storage(self):
-        self._save_storage_curren_num += 1
+        self._save_storage_current_num += 1
         __save = defaultdict(list)
 
         for data in self._storage:
@@ -1245,7 +1245,7 @@ class ExtremeStorage:
             __save["trend_min_eps"].append(data.get_trend_min_eps())
             __save["trend_max_eps"].append(data.get_trend_max_eps())
 
-        self._save_storage[self._save_storage_curren_num] = __save
+        self._save_storage[self._save_storage_current_num] = __save
 
 
 class PlotTrendPoint:
