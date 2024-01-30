@@ -451,7 +451,7 @@ class ExtremeStorage:
 
     def __init__(self):
         self._storage: list[ExtremesContainer] = []
-        self._save_storage: {int, {str, TrendData | int}} = {}
+        self._save_storage: {int, {str, list[TrendData | int]}} = {}
         self._save_storage_current_num: int = 0
         self._current_iter = 0
 
