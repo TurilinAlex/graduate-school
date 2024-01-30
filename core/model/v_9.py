@@ -1252,21 +1252,26 @@ class ExtremeStorage:
         return self._save_storage_current_num
 
     def save_storage(self):
-        self._save_storage_current_num += 1
-        __save = defaultdict(list)
+
+        self.__add_save_default_storage()
 
         for data in self._storage:
-            __save["all"].append(copy.deepcopy(data.all))
-            __save["min"].append(copy.deepcopy(data.min))
-            __save["max"].append(copy.deepcopy(data.max))
+            if data.get_current_iter():
+                self._save_storage[data.get_current_iter()]["all"][data.get_sub_interval()] \
+                    = copy.deepcopy(data.all)
+                self._save_storage[data.get_current_iter()]["min"][data.get_sub_interval()] \
+                    = copy.deepcopy(data.min)
+                self._save_storage[data.get_current_iter()]["max"][data.get_sub_interval()] \
+                    = copy.deepcopy(data.max)
 
-            __save["extr_min_eps"].append(data.get_extr_min_eps())
-            __save["extr_max_eps"].append(data.get_extr_max_eps())
-
-            __save["trend_min_eps"].append(data.get_trend_min_eps())
-            __save["trend_max_eps"].append(data.get_trend_max_eps())
-
-        self._save_storage[self._save_storage_current_num] = __save
+                self._save_storage[data.get_current_iter()]["extr_min_eps"][data.get_sub_interval()] \
+                    = data.get_extr_min_eps()
+                self._save_storage[data.get_current_iter()]["extr_max_eps"][data.get_sub_interval()] \
+                    = data.get_extr_max_eps()
+                self._save_storage[data.get_current_iter()]["trend_min_eps"][data.get_sub_interval()] \
+                    = data.get_trend_min_eps()
+                self._save_storage[data.get_current_iter()]["trend_max_eps"][data.get_sub_interval()] \
+                    = data.get_trend_max_eps()
 
 
 class PlotTrendPoint:
