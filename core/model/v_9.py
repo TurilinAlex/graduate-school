@@ -440,6 +440,12 @@ class ExtremesContainer:
 
     # endregion Trend getter
 
+    def get_sub_interval(self) -> int:
+        return self._sub_interval
+
+    def get_current_iter(self) -> int:
+        return self._current_iter
+
 
 class ExtremeStorage:
 
