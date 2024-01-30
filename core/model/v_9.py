@@ -1,5 +1,4 @@
 import copy
-from collections import defaultdict
 from dataclasses import dataclass
 from operator import le, lt, gt, ge
 from typing import Callable
