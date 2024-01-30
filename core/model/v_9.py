@@ -791,17 +791,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["all"][item].extr_indexes
+            __data = self._save_storage[after_iter]["all"][item]
+            if __data is not None:
+                return __data.extr_indexes
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["all"]:
-                __data.extend(data.extr_indexes)
+                if data is not None:
+                    __data.extend(data.extr_indexes)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["all"][item]:
-                __data.extend(data.extr_indexes)
+                if data is not None:
+                    __data.extend(data.extr_indexes)
             return np.array(__data)
 
     def get_extr_values_combined(
@@ -820,17 +825,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["all"][item].extr_values
+            __data = self._save_storage[after_iter]["all"][item]
+            if __data is not None:
+                return __data.extr_values
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["all"]:
-                __data.extend(data.extr_values)
+                if data is not None:
+                    __data.extend(data.extr_values)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["all"][item]:
-                __data.extend(data.extr_values)
+                if data is not None:
+                    __data.extend(data.extr_values)
             return np.array(__data)
 
     def get_extr_indexes_min(
@@ -849,17 +859,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["min"][item].extr_indexes
+            __data = self._save_storage[after_iter]["min"][item]
+            if __data is not None:
+                return __data.extr_indexes
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["min"]:
-                __data.extend(data.extr_indexes)
+                if data is not None:
+                    __data.extend(data.extr_indexes)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["min"][item]:
-                __data.extend(data.extr_indexes)
+                if data is not None:
+                    __data.extend(data.extr_indexes)
             return np.array(__data)
 
     def get_extr_values_min(
@@ -878,17 +893,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["min"][item].extr_values
+            __data = self._save_storage[after_iter]["min"][item]
+            if __data is not None:
+                return __data.extr_values
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["min"]:
-                __data.extend(data.extr_values)
+                if data is not None:
+                    __data.extend(data.extr_values)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["min"][item]:
-                __data.extend(data.extr_values)
+                if data is not None:
+                    __data.extend(data.extr_values)
             return np.array(__data)
 
     def get_extr_indexes_max(
@@ -907,17 +927,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["max"][item].extr_indexes
+            __data = self._save_storage[after_iter]["max"][item]
+            if __data is not None:
+                return __data.extr_indexes
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["max"]:
-                __data.extend(data.extr_indexes)
+                if data is not None:
+                    __data.extend(data.extr_indexes)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["max"][item]:
-                __data.extend(data.extr_indexes)
+                if data is not None:
+                    __data.extend(data.extr_indexes)
             return np.array(__data)
 
     def get_extr_values_max(
@@ -936,17 +961,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["max"][item].extr_values
+            __data = self._save_storage[after_iter]["max"][item]
+            if __data is not None:
+                return __data.extr_values
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["max"]:
-                __data.extend(data.extr_values)
+                if data is not None:
+                    __data.extend(data.extr_values)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["max"][item]:
-                __data.extend(data.extr_values)
+                if data is not None:
+                    __data.extend(data.extr_values)
             return np.array(__data)
 
     def get_extr_eps_min(
@@ -965,17 +995,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return np.array([self._save_storage[after_iter]["extr_min_eps"][item]])
+            __data = self._save_storage[after_iter]["extr_min_eps"][item]
+            if __data is not None:
+                return np.array([__data])
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["extr_min_eps"]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["extr_min_eps"][item]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
     def get_extr_max_eps(
@@ -994,17 +1029,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return np.array([self._save_storage[after_iter]["extr_max_eps"][item]])
+            __data = self._save_storage[after_iter]["extr_max_eps"][item]
+            if __data is not None:
+                return np.array([__data])
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["extr_max_eps"]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["extr_max_eps"][item]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
     # endregion Extremum getter
@@ -1027,17 +1067,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["all"][item].trend_indexes
+            __data = self._save_storage[after_iter]["all"][item]
+            if __data is not None:
+                return __data.trend_indexes
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["all"]:
-                __data.extend(data.trend_indexes)
+                if data is not None:
+                    __data.extend(data.trend_indexes)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["all"][item]:
-                __data.extend(data.trend_indexes)
+                if data is not None:
+                    __data.extend(data.trend_indexes)
             return np.array(__data)
 
     def get_trend_values_combined(
@@ -1056,17 +1101,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["all"][item].trend_values
+            __data = self._save_storage[after_iter]["all"][item]
+            if __data is not None:
+                return __data.trend_values
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["all"]:
-                __data.extend(data.trend_values)
+                if data is not None:
+                    __data.extend(data.trend_values)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["all"][item]:
-                __data.extend(data.trend_values)
+                if data is not None:
+                    __data.extend(data.trend_values)
             return np.array(__data)
 
     def get_trend_indexes_min(
@@ -1085,17 +1135,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["min"][item].trend_indexes
+            __data = self._save_storage[after_iter]["min"][item]
+            if __data is not None:
+                return __data.trend_indexes
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["min"]:
-                __data.extend(data.trend_indexes)
+                if data is not None:
+                    __data.extend(data.trend_indexes)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["min"][item]:
-                __data.extend(data.trend_indexes)
+                if data is not None:
+                    __data.extend(data.trend_indexes)
             return np.array(__data)
 
     def get_trend_values_min(
@@ -1114,17 +1169,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["min"][item].trend_values
+            __data = self._save_storage[after_iter]["min"][item]
+            if __data is not None:
+                return __data.trend_values
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["min"]:
-                __data.extend(data.trend_values)
+                if data is not None:
+                    __data.extend(data.trend_values)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["min"][item]:
-                __data.extend(data.trend_values)
+                if data is not None:
+                    __data.extend(data.trend_values)
             return np.array(__data)
 
     def get_trend_indexes_max(
@@ -1143,17 +1203,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["max"][item].trend_indexes
+            __data = self._save_storage[after_iter]["max"][item]
+            if __data is not None:
+                return __data.trend_indexes
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["max"]:
-                __data.extend(data.trend_indexes)
+                if data is not None:
+                    __data.extend(data.trend_indexes)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["max"][item]:
-                __data.extend(data.trend_indexes)
+                if data is not None:
+                    __data.extend(data.trend_indexes)
             return np.array(__data)
 
     def get_trend_values_max(
@@ -1172,24 +1237,29 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return self._save_storage[after_iter]["max"][item].trend_values
+            __data = self._save_storage[after_iter]["max"][item]
+            if __data is not None:
+                return __data.trend_values
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["max"]:
-                __data.extend(data.trend_values)
+                if data is not None:
+                    __data.extend(data.trend_values)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["max"][item]:
-                __data.extend(data.trend_values)
+                if data is not None:
+                    __data.extend(data.trend_values)
             return np.array(__data)
 
     def get_trend_eps_min(
             self,
             item: int | slice | None = None,
             after_iter: int | None = None,
-    ) -> int:
+    ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
             after_iter = self._save_storage_current_num
@@ -1201,24 +1271,29 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return np.array([self._save_storage[after_iter]["trend_min_eps"][item]])
+            __data = self._save_storage[after_iter]["trend_min_eps"][item]
+            if __data is not None:
+                return np.array([self._save_storage[after_iter]["trend_min_eps"][item]])
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["trend_min_eps"]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["trend_min_eps"][item]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
     def get_trend_max_eps(
             self,
             item: int | slice | None = None,
             after_iter: int | None = None,
-    ) -> int:
+    ) -> np.ndarray[np.uint32]:
 
         if after_iter is None:
             after_iter = self._save_storage_current_num
@@ -1230,17 +1305,22 @@ class ExtremeStorage:
                 )
 
         if isinstance(item, int):
-            return np.array([self._save_storage[after_iter]["trend_max_eps"][item]])
+            __data = self._save_storage[after_iter]["trend_max_eps"][item]
+            if __data is not None:
+                return np.array([self._save_storage[after_iter]["trend_max_eps"][item]])
+            raise IndexError
 
         __data = []
         if item is None:
             for data in self._save_storage[after_iter]["trend_max_eps"]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
         if isinstance(item, slice):
             for data in self._save_storage[after_iter]["trend_max_eps"][item]:
-                __data.append(data)
+                if data is not None:
+                    __data.append(data)
             return np.array(__data)
 
     # endregion Trend getter
@@ -1800,26 +1880,24 @@ def main():
     rows = 20_000
     size = 18_500
     batch = 2_000
-    df = pd.read_csv("/home/turilin/Documents/GitHub/graduate-school/data_1m/AUD_CAD.csv", nrows=rows)
+    df = pd.read_csv("/Users/aleksandrturilin/HomeProject/graduate-school/data/USD_CAD.csv", nrows=rows)
     values = df.Close.values
 
     extr_storage = ExtremeStorage()
     extr_storage.build(values=values, split=size, batch=batch)
-
     plot = PlotTrendPoint(model=extr_storage, values=values)
 
     coincident = [3, 2, 2]
     eps_extr = [10, 1, 1]
     eps_trend = 2
-    item = slice(-5, -1, 1)
+    item = slice(-5, None, None)
 
     for i, (c, e) in enumerate(zip(coincident, eps_extr)):
         extr_storage.search_extremes(coincident=c, eps=e, item=item)
         extr_storage.search_trends(eps_for_min=eps_trend, eps_for_max=eps_trend, item=item)
         extr_storage.save_storage()
 
-        plot.plot_extremum(item=item)
-
+    plot.plot_extremum(item=item)
     plot.plot_change_trend(item=item)
     plot.show()
 
