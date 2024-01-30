@@ -78,6 +78,7 @@ class ExtremesContainer:
             end=end,
         )
 
+        self._current_iter = 0
         self._sub_interval = sub_interval
 
         self._diff_min_extr: np.ndarray[int] | None = None
@@ -107,6 +108,8 @@ class ExtremesContainer:
             border_check: Callable = None,
             is_update_extr_data: bool = True,
     ) -> None:
+
+        self._current_iter += 1
 
         self.is_updated_extr = True
 
