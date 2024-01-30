@@ -485,6 +485,7 @@ class ExtremeStorage:
             item: int | slice | None = None,
             is_border_check: bool = True,
     ) -> None:
+        self._save_storage_current_num += 1
 
         border_check_all = self.border_check_all if is_border_check else None
 
