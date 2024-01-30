@@ -1277,6 +1277,13 @@ class PlotTrendPoint:
         )
         self._fig.subplots_adjust(left=0.05, right=0.99, top=0.95, bottom=0.05, wspace=0, hspace=0)
         self._model: ExtremeStorage = model
+
+        for data in self._model:
+            if data.get_sub_interval() % 2 == 0:
+                self._ax_plot.axvspan(data.all.begin, data.all.end, color='lightgray', alpha=0.3)
+            else:
+                self._ax_plot.axvspan(data.all.begin, data.all.end, color='lightgray', alpha=0.5)
+
         self._ax_legend.set_axis_off()
         y_min = np.min(values)
         y_max = np.max(values)
