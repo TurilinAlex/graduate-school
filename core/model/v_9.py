@@ -760,6 +760,18 @@ class ExtremeStorage:
     def __add(self, container: ExtremesContainer):
         self._storage.append(container)
 
+    def __add_save_default_storage(self):
+
+        self._save_storage[self._save_storage_current_num] = {
+            "all": [None for _ in range(len(self))],
+            "min": [None for _ in range(len(self))],
+            "max": [None for _ in range(len(self))],
+            "extr_min_eps": [None for _ in range(len(self))],
+            "extr_max_eps": [None for _ in range(len(self))],
+            "trend_min_eps": [None for _ in range(len(self))],
+            "trend_max_eps": [None for _ in range(len(self))],
+        }
+
     # endregion CoreLogic
 
     # region Extremum getter
