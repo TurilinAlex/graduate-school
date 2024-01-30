@@ -1215,7 +1215,7 @@ class ExtremeStorage:
                 __data.append(data)
             return np.array(__data)
 
-    def get_trend_eps_max(
+    def get_trend_max_eps(
             self,
             item: int | slice | None = None,
             after_iter: int | None = None,
@@ -1621,7 +1621,7 @@ class PlotTrendPoint:
                 "linewidths": 1.2,
                 "label": f"Up->Down trend:\n\t"
                          f"after iter={after_iter}\n\t"
-                         f"eps={self._model.get_trend_eps_max(item=item, after_iter=after_iter)}\t"
+                         f"eps={self._model.get_trend_max_eps(item=item, after_iter=after_iter)}\t"
                          f"len={len(self._model.get_trend_indexes_max(item=item, after_iter=after_iter))}",
             },
         )
