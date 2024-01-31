@@ -403,10 +403,10 @@ class ExtremesContainer:
     def get_extr_values_max(self) -> np.ndarray[np.float32]:
         return self.max.extr_values
 
-    def get_extr_min_eps(self) -> int:
+    def get_extr_eps_min(self) -> int:
         return self._eps_min_extr
 
-    def get_extr_max_eps(self) -> int:
+    def get_extr_eps_max(self) -> int:
         return self._eps_max_extr
 
     def get_extr_indexes_combined(self) -> np.ndarray[np.uint32]:
@@ -431,10 +431,10 @@ class ExtremesContainer:
     def get_trend_values_max(self) -> np.ndarray[np.float32]:
         return self.max.trend_values
 
-    def get_trend_min_eps(self) -> int:
+    def get_trend_eps_min(self) -> int:
         return self._eps_min_trend
 
-    def get_trend_max_eps(self) -> int:
+    def get_trend_eps_max(self) -> int:
         return self._eps_max_trend
 
     def get_trend_indexes_combined(self) -> np.ndarray[np.uint32]:
