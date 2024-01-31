@@ -1,4 +1,3 @@
-import copy
 from dataclasses import dataclass
 from operator import le, lt, gt, ge
 from typing import Callable
@@ -490,7 +489,6 @@ class ExtremeStorage:
             item: int | slice | None = None,
             is_border_check: bool = True,
     ) -> None:
-        self._save_storage_current_num += 1
 
         border_check_all = self.border_check_all if is_border_check else None
 
@@ -528,19 +526,23 @@ class ExtremeStorage:
             data.update_extr_data()
 
             data.all.begin = _begin_all
-            _end_all = _begin_all + len(data.all.extr_indexes)
+            _end_all = data.all.begin + len(data.all.extr_indexes)
             data.all.end = _end_all
             _begin_all = _end_all
 
             data.min.begin = _begin_min
-            _end_min = _begin_min + len(data.min.extr_indexes)
+            _end_min = data.min.begin + len(data.min.extr_indexes)
             data.min.end = _end_min
             _begin_min = _end_min
 
             data.max.begin = _begin_max
-            _end_max = _begin_max + len(data.max.extr_indexes)
+            _end_max = data.max.begin + len(data.max.extr_indexes)
             data.max.end = _end_max
             _begin_max = _end_max
+
+        self._save_storage_current_num += 1
+        self.__add_save_default_storage()
+        self.__save_storage_extr()
 
     def search_trends(
             self,
@@ -583,6 +585,8 @@ class ExtremeStorage:
                 )
         for data in self._storage:
             data.update_trend_data()
+
+        self.__save_storage_trend()
 
     def border_check_all(
             self,
@@ -762,20 +766,183 @@ class ExtremeStorage:
 
             self.__add(container=container)
 
+        self.__add_save_default_storage()
+        self.__save_storage_extr()
+        self.__save_storage_trend()
+
     def __add(self, container: ExtremesContainer):
         self._storage.append(container)
 
     def __add_save_default_storage(self):
+        if not self._save_storage_current_num:
+            self._save_storage[self._save_storage_current_num] = [
+                {
+                    "all": {
+                        "extr_indexes": None,
+                        "extr_values": None,
+                        "trend_indexes": None,
+                        "trend_values": None,
+                        "begin": None,
+                        "end": None,
+                    },
+                    "min": {
+                        "extr_indexes": None,
+                        "extr_values": None,
+                        "trend_indexes": None,
+                        "trend_values": None,
+                        "begin": None,
+                        "end": None,
+                    },
+                    "max": {
+                        "extr_indexes": None,
+                        "extr_values": None,
+                        "trend_indexes": None,
+                        "trend_values": None,
+                        "begin": None,
+                        "end": None,
+                    },
+                    "extr_eps_min": None,
+                    "extr_eps_max": None,
+                    "trend_eps_min": None,
+                    "trend_eps_max": None,
+                } for _ in range(len(self))
+            ]
 
-        self._save_storage[self._save_storage_current_num] = {
-            "all": [None for _ in range(len(self))],
-            "min": [None for _ in range(len(self))],
-            "max": [None for _ in range(len(self))],
-            "extr_min_eps": [None for _ in range(len(self))],
-            "extr_max_eps": [None for _ in range(len(self))],
-            "trend_min_eps": [None for _ in range(len(self))],
-            "trend_max_eps": [None for _ in range(len(self))],
-        }
+            return
+
+        self._save_storage[self._save_storage_current_num] = [None for _ in range(len(self))]
+        for data in self._storage:
+            __data = {
+                "all": {
+                    "extr_indexes":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["all"]["extr_indexes"],
+                    "extr_values":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["all"]["extr_values"],
+                    "trend_indexes":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["all"]["trend_indexes"],
+                    "trend_values":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["all"]["trend_values"],
+                    "begin":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["all"]["begin"],
+                    "end":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["all"]["end"],
+                },
+                "min": {
+                    "extr_indexes":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["min"]["extr_indexes"],
+                    "extr_values":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["min"]["extr_values"],
+                    "trend_indexes":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["min"]["trend_indexes"],
+                    "trend_values":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["min"]["trend_values"],
+                    "begin":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["min"]["begin"],
+                    "end":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["min"]["end"],
+                },
+                "max": {
+                    "extr_indexes":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["max"]["extr_indexes"],
+                    "extr_values":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["max"]["extr_values"],
+                    "trend_indexes":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["max"]["trend_indexes"],
+                    "trend_values":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["max"]["trend_values"],
+                    "begin":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["max"]["begin"],
+                    "end":
+                        self._save_storage[self._save_storage_current_num - 1]
+                        [data.get_sub_interval()]["max"]["end"],
+                },
+                "extr_eps_min":
+                    self._save_storage[self._save_storage_current_num - 1]
+                    [data.get_sub_interval()]["extr_eps_min"],
+                "extr_eps_max":
+                    self._save_storage[self._save_storage_current_num - 1]
+                    [data.get_sub_interval()]["extr_eps_max"],
+                "trend_eps_min":
+                    self._save_storage[self._save_storage_current_num - 1]
+                    [data.get_sub_interval()]["trend_eps_min"],
+                "trend_eps_max":
+                    self._save_storage[self._save_storage_current_num - 1]
+                    [data.get_sub_interval()]["trend_eps_max"],
+            }
+            self._save_storage[self._save_storage_current_num][data.get_sub_interval()] = __data
+
+    def __save_storage_extr(self):
+
+        for data in self._storage:
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["all"]["extr_indexes"] \
+                = data.get_extr_indexes_combined()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["all"]["extr_values"] \
+                = data.get_extr_values_combined()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["all"]["begin"] \
+                = data.all.begin
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["all"]["end"] \
+                = data.all.end
+
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["min"]["extr_indexes"] \
+                = data.get_extr_indexes_min()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["min"]["extr_values"] \
+                = data.get_extr_values_min()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["min"]["begin"] \
+                = data.min.begin
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["min"]["end"] \
+                = data.min.end
+
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["max"]["extr_indexes"] \
+                = data.get_extr_indexes_max()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["max"]["extr_values"] \
+                = data.get_extr_values_max()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["max"]["begin"] \
+                = data.max.begin
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["max"]["end"] \
+                = data.max.end
+
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["extr_eps_min"] \
+                = data.get_extr_eps_min()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["extr_eps_max"] \
+                = data.get_extr_eps_max()
+
+    def __save_storage_trend(self):
+
+        for data in self._storage:
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["all"]["trend_indexes"] \
+                = data.get_trend_indexes_combined()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["all"]["trend_values"] \
+                = data.get_trend_values_combined()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["min"]["trend_indexes"] \
+                = data.get_trend_indexes_min()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["min"]["trend_values"] \
+                = data.get_trend_values_min()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["max"]["trend_indexes"] \
+                = data.get_trend_indexes_max()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["max"]["trend_values"] \
+                = data.get_trend_values_max()
+
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["trend_eps_min"] \
+                = data.get_trend_eps_min()
+            self._save_storage[data.get_current_iter()][data.get_sub_interval()]["trend_eps_max"] \
+                = data.get_trend_eps_max()
 
     # endregion CoreLogic
 
@@ -1804,7 +1971,7 @@ def main_for_test():
     extr_storage = ExtremeStorage()
     extr_storage.build(values=values, split=size, batch=batch)
 
-    for i in range(2):
+    for i in range(20):
         eps_extr = np.random.randint(5, 15)
         eps_trend = np.random.randint(5, 15)
 
@@ -1885,4 +2052,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main_for_test()
