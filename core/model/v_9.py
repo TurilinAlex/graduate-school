@@ -1337,28 +1337,6 @@ class ExtremeStorage:
     def get_current_iter(self) -> int:
         return self._save_storage_current_num
 
-    def save_storage(self):
-
-        self.__add_save_default_storage()
-
-        for data in self._storage:
-            if data.get_current_iter():
-                self._save_storage[data.get_current_iter()]["all"][data.get_sub_interval()] \
-                    = copy.deepcopy(data.all)
-                self._save_storage[data.get_current_iter()]["min"][data.get_sub_interval()] \
-                    = copy.deepcopy(data.min)
-                self._save_storage[data.get_current_iter()]["max"][data.get_sub_interval()] \
-                    = copy.deepcopy(data.max)
-
-                self._save_storage[data.get_current_iter()]["extr_min_eps"][data.get_sub_interval()] \
-                    = data.get_extr_min_eps()
-                self._save_storage[data.get_current_iter()]["extr_max_eps"][data.get_sub_interval()] \
-                    = data.get_extr_max_eps()
-                self._save_storage[data.get_current_iter()]["trend_min_eps"][data.get_sub_interval()] \
-                    = data.get_trend_min_eps()
-                self._save_storage[data.get_current_iter()]["trend_max_eps"][data.get_sub_interval()] \
-                    = data.get_trend_max_eps()
-
 
 class PlotTrendPoint:
     def __init__(self, model: ExtremeStorage, values: np.ndarray[np.float32]):
@@ -1835,7 +1813,6 @@ def main_for_test():
 
         extr_storage.search_extremes(coincident=1, eps=eps_extr)
         extr_storage.search_trends(eps_for_min=eps_trend, eps_for_max=eps_trend)
-        extr_storage.save_storage()
 
         print(f"{i:3d} Assert len.........")
         assert len(trend_combined.get_combined_indexes()) == len(extr_storage.get_extr_indexes_combined()), print(
@@ -1901,7 +1878,6 @@ def main():
     for i, (c, e) in enumerate(zip(coincident, eps_extr)):
         extr_storage.search_extremes(coincident=c, eps=e, item=item)
         extr_storage.search_trends(eps_for_min=eps_trend, eps_for_max=eps_trend, item=item)
-        extr_storage.save_storage()
 
     plot.plot_extremum(item=item)
     plot.plot_change_trend(item=item)
