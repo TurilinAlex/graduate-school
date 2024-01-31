@@ -100,6 +100,12 @@ class ExtremesContainer:
         self._eps_min_trend: int | None = None
         self._eps_max_trend: int | None = None
 
+    def __repr__(self):
+        return (f"Sub: {self._sub_interval}..........\n"
+                f"All: {self.all}\n"
+                f"Min: {self.min}\n"
+                f"Max: {self.max}\n")
+
     def search_extremes(
             self,
             eps: int,
