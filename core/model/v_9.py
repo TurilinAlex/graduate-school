@@ -113,8 +113,6 @@ class ExtremesContainer:
             is_update_extr_data: bool = True,
     ) -> None:
 
-        self._current_iter += 1
-
         self.is_updated_extr = True
 
         _marker_min, _marker_max = self._diff_between_sort_indexes(eps=eps)
@@ -145,17 +143,7 @@ class ExtremesContainer:
         if is_update_extr_data:
             self.update_extr_data()
 
-    def update_extr_data(self):
-        if self.is_updated_extr:
-            self.min.extr_values = self.all.extr_values[self._extr_min_index]
-            self.max.extr_values = self.all.extr_values[self._extr_max_index]
-            self.all.extr_values = self.all.extr_values[self._extr_all_index]
-
-    def update_trend_data(self):
-        if self.is_updated_trend:
-            self.min.trend_values = self.min.extr_values[self._trend_min_index]
-            self.max.trend_values = self.max.extr_values[self._trend_max_index]
-            self.all.trend_values = self.all.extr_values[self._trend_all_index]
+        self._current_iter += 1
 
     def search_trends(
             self,
@@ -184,6 +172,18 @@ class ExtremesContainer:
 
         if is_update_trend_data:
             self.update_trend_data()
+
+    def update_extr_data(self):
+        if self.is_updated_extr:
+            self.min.extr_values = self.all.extr_values[self._extr_min_index]
+            self.max.extr_values = self.all.extr_values[self._extr_max_index]
+            self.all.extr_values = self.all.extr_values[self._extr_all_index]
+
+    def update_trend_data(self):
+        if self.is_updated_trend:
+            self.min.trend_values = self.min.extr_values[self._trend_min_index]
+            self.max.trend_values = self.max.extr_values[self._trend_max_index]
+            self.all.trend_values = self.all.extr_values[self._trend_all_index]
 
     def _diff_between_sort_indexes(self, eps: int = 1) -> tuple[np.ndarray, np.ndarray]:
 
