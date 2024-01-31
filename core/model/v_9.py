@@ -290,6 +290,7 @@ class ExtremesContainer:
                 is_add_index = border_check(
                     left=le,
                     right=lt,
+                    after_iter=self._current_iter,
                     extremes_index=i,
                     offset=_offset,
                     batch=_batch,
@@ -308,6 +309,7 @@ class ExtremesContainer:
                 is_add_index = border_check(
                     left=gt,
                     right=ge,
+                    after_iter=self._current_iter,
                     extremes_index=i,
                     offset=_offset,
                     batch=_batch,
@@ -341,6 +343,7 @@ class ExtremesContainer:
                 is_add_index = border_check_min(
                     left=le,
                     right=lt,
+                    after_iter=self._current_iter,
                     extremes_index=i,
                     offset=_offset_min,
                     batch=_batch_min,
@@ -357,6 +360,7 @@ class ExtremesContainer:
                 is_add_index = border_check_max(
                     left=gt,
                     right=ge,
+                    after_iter=self._current_iter,
                     extremes_index=i,
                     offset=_offset_max,
                     batch=_batch_max,
@@ -592,6 +596,7 @@ class ExtremeStorage:
             self,
             left: Callable[[float, float], bool],
             right: Callable[[float, float], bool],
+            after_iter: int,
             extremes_index: int,
             offset: int,
             batch: int,
@@ -601,13 +606,13 @@ class ExtremeStorage:
         _left = True
         _right = True
 
-        _i_extr, _j_extr = self.unravel_index_all((extremes_index + offset))
+        _i_extr, _j_extr = self.unravel_index_all(index=(extremes_index + offset), after_iter=after_iter)
 
         if extremes_index - eps < 0:
             for i in range(offset - 1, extremes_index + offset - eps - 1, -1):
                 if i < 0:
                     break
-                _i, _j = self.unravel_index_all(i)
+                _i, _j = self.unravel_index_all(index=i, after_iter=after_iter)
                 if left(
                         self[_i].all.extr_values[_j],
                         self[_i_extr].all.extr_values[_j_extr]
@@ -620,7 +625,7 @@ class ExtremeStorage:
                 if i >= self._storage[-1].all.end:
                     break
 
-                _i, _j = self.unravel_index_all(i)
+                _i, _j = self.unravel_index_all(index=i, after_iter=after_iter)
                 if right(
                         self[_i].all.extr_values[_j],
                         self[_i_extr].all.extr_values[_j_extr]
@@ -634,6 +639,7 @@ class ExtremeStorage:
             self,
             left: Callable[[float, float], bool],
             right: Callable[[float, float], bool],
+            after_iter: int,
             extremes_index: int,
             offset: int,
             batch: int,
@@ -643,13 +649,13 @@ class ExtremeStorage:
         _left = True
         _right = True
 
-        _i_extr, _j_extr = self.unravel_index_min((extremes_index + offset))
+        _i_extr, _j_extr = self.unravel_index_min(index=(extremes_index + offset), after_iter=after_iter)
 
         if extremes_index - eps < 0:
             for i in range(offset - 1, extremes_index + offset - eps - 1, -1):
                 if i < 0:
                     break
-                _i, _j = self.unravel_index_min(i)
+                _i, _j = self.unravel_index_min(index=i, after_iter=after_iter)
                 if left(
                         self[_i].min.extr_values[_j],
                         self[_i_extr].min.extr_values[_j_extr]
@@ -662,7 +668,7 @@ class ExtremeStorage:
                 if i >= self._storage[-1].min.end:
                     break
 
-                _i, _j = self.unravel_index_min(i)
+                _i, _j = self.unravel_index_min(index=i, after_iter=after_iter)
                 if right(
                         self[_i].min.extr_values[_j],
                         self[_i_extr].min.extr_values[_j_extr]
@@ -676,6 +682,7 @@ class ExtremeStorage:
             self,
             left: Callable[[float, float], bool],
             right: Callable[[float, float], bool],
+            after_iter: int,
             extremes_index: int,
             offset: int,
             batch: int,
@@ -685,13 +692,13 @@ class ExtremeStorage:
         _left = True
         _right = True
 
-        _i_extr, _j_extr = self.unravel_index_max((extremes_index + offset))
+        _i_extr, _j_extr = self.unravel_index_max(index=(extremes_index + offset), after_iter=after_iter)
 
         if extremes_index - eps < 0:
             for i in range(offset - 1, extremes_index + offset - eps - 1, -1):
                 if i < 0:
                     break
-                _i, _j = self.unravel_index_max(i)
+                _i, _j = self.unravel_index_max(index=i, after_iter=after_iter)
                 if left(
                         self[_i].max.extr_values[_j],
                         self[_i_extr].max.extr_values[_j_extr]
@@ -704,7 +711,7 @@ class ExtremeStorage:
                 if i >= self._storage[-1].max.end:
                     break
 
-                _i, _j = self.unravel_index_max(i)
+                _i, _j = self.unravel_index_max(index=i, after_iter=after_iter)
                 if right(
                         self[_i].max.extr_values[_j],
                         self[_i_extr].max.extr_values[_j_extr]
@@ -714,40 +721,52 @@ class ExtremeStorage:
 
         return _left and _right
 
-    def unravel_index_all(self, index: int):
+    def unravel_index_all(self, index: int, after_iter: int):
         i = 0
         size = 0
         while size < len(self) - 1:
-            index -= len(self[i].all.extr_values)
+            index -= len(self._save_storage[after_iter][i]["all"]["extr_values"])
             if index < 0:
                 break
             i += 1
             size += 1
-        j = index % len(self[i].all.extr_values) if len(self[i].all.extr_values) else 0
+
+        j = 0
+        if len(self._save_storage[after_iter][i]["all"]["extr_values"]):
+            j = index % len(self._save_storage[after_iter][i]["all"]["extr_values"])
+
         return i, j
 
-    def unravel_index_min(self, index: int):
+    def unravel_index_min(self, index: int, after_iter: int):
         i = 0
         size = 0
         while size < len(self) - 1:
-            index -= len(self[i].min.extr_values)
+            index -= len(self._save_storage[after_iter][i]["min"]["extr_values"])
             if index < 0:
                 break
             i += 1
             size += 1
-        j = index % len(self[i].min.extr_values) if len(self[i].min.extr_values) else 0
+
+        j = 0
+        if len(self._save_storage[after_iter][i]["min"]["extr_values"]):
+            j = index % len(self._save_storage[after_iter][i]["min"]["extr_values"])
+
         return i, j
 
-    def unravel_index_max(self, index: int):
+    def unravel_index_max(self, index: int, after_iter: int):
         i = 0
         size = 0
         while size < len(self) - 1:
-            index -= len(self[i].max.extr_values)
+            index -= len(self._save_storage[after_iter][i]["max"]["extr_values"])
             if index < 0:
                 break
             i += 1
             size += 1
-        j = index % len(self[i].max.extr_values) if len(self[i].max.extr_values) else 0
+
+        j = 0
+        if len(self._save_storage[after_iter][i]["max"]["extr_values"]):
+            j = index % len(self._save_storage[after_iter][i]["max"]["extr_values"])
+
         return i, j
 
     def build(self, values: np.ndarray[float], split: int, batch: int):
@@ -2052,4 +2071,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main_for_test()
+    main()
