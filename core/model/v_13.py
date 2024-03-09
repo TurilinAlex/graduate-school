@@ -71,10 +71,10 @@ class ExtremesData:
 
     def __repr__(self):
         return (
-            f"=== all ==========\n{self.all}\n"
-            f"=== min ==========\n{self.min}\n"
-            f"=== max ==========\n{self.max}\n"
-            f"------------------\n"
+            f"=== all ==============================\n{self.all}\n"
+            f"=== min ==============================\n{self.min}\n"
+            f"=== max ==============================\n{self.max}\n"
+            f"--------------------------------------\n"
             f"{'extr_eps_min':<18}: {self.extr_eps_min}\n"
             f"{'extr_eps_max':<18}: {self.extr_eps_max}\n"
             f"{'trend_eps_min':<18}: {self.trend_eps_min}\n"
@@ -83,11 +83,23 @@ class ExtremesData:
 
 
 class ExtremesBase:
+    __values: ExtendedList[float] | None = None
 
     def __init__(self):
         self.__extr_iter: int = 0
         self.__history_data: dict[int, ExtremesData] = {0: ExtremesData()}
         self.__current_data: ExtremesData = ExtremesData()
+
+    def __repr__(self):
+        return f"{self.__current_data!r}"
+
+    @classmethod
+    def set_values(cls, values):
+        cls.__values = ExtendedList(values)
+
+    @classmethod
+    def get_values(cls):
+        return cls.__values
 
     @property
     def current(self):
@@ -381,7 +393,6 @@ class ExtremesBase:
 
 
 class Extremes(ExtremesBase):
-    __values: ExtendedList[float] | None = None
 
     def __init__(
             self,
@@ -412,18 +423,16 @@ class Extremes(ExtremesBase):
 
         self.save_extremes_data()
 
-    @classmethod
-    def set_values(cls, values):
-        cls.__values = ExtendedList(values)
-
-    @classmethod
-    def get_values(cls):
-        return cls.__values
+    def get_sub_interval(self):
+        return self._sub_interval
 
     def search_extremes(
             self,
             eps: int,
             coincident: int,
+            start_all_index: int = None,
+            start_min_index: int = None,
+            start_max_index: int = None,
     ) -> None:
         self.add_extremes_iter()
 
@@ -449,7 +458,36 @@ class Extremes(ExtremesBase):
         )
 
         self.__set_extremes_data()
+        self.__update_interval_values(
+            start_all_index=start_all_index,
+            start_min_index=start_min_index,
+            start_max_index=start_max_index,
+        )
         self.__save_extremes_data()
+
+    def __update_interval_values(
+            self,
+            start_all_index: int = None,
+            start_min_index: int = None,
+            start_max_index: int = None,
+    ):
+        if start_all_index is not None:
+            self.current.all.begin = start_all_index
+        elif self.current.all.begin is None:
+            self.current.all.begin = 0
+        self.current.all.end = self.current.all.begin + len(self.current.all.extr_indexes)
+
+        if start_min_index is not None:
+            self.current.min.begin = start_min_index
+        elif self.current.min.begin is None:
+            self.current.min.begin = 0
+        self.current.min.end = self.current.min.begin + len(self.current.min.extr_indexes)
+
+        if start_max_index is not None:
+            self.current.max.begin = start_max_index
+        elif self.current.max.begin is None:
+            self.current.max.begin = 0
+        self.current.max.end = self.current.max.begin + len(self.current.max.extr_indexes)
 
     def search_trends(
             self,
@@ -647,9 +685,9 @@ class Extremes(ExtremesBase):
             sorted(self.current.min.extr_indexes + self.current.max.extr_indexes)
         )
 
-        self.current.min.extr_values = self.__values[self.current.min.extr_indexes]
-        self.current.max.extr_values = self.__values[self.current.max.extr_indexes]
-        self.current.all.extr_values = self.__values[self.current.all.extr_indexes]
+        self.current.min.extr_values = self.get_values()[self.current.min.extr_indexes]
+        self.current.max.extr_values = self.get_values()[self.current.max.extr_indexes]
+        self.current.all.extr_values = self.get_values()[self.current.all.extr_indexes]
 
     def __set_trends_data(self):
         self.current.min.trend_indexes = self.current.min.extr_indexes[self.current.min.temp_trend]
@@ -658,9 +696,9 @@ class Extremes(ExtremesBase):
             sorted(self.current.min.trend_indexes + self.current.max.trend_indexes)
         )
 
-        self.current.min.trend_values = self.__values[self.current.min.trend_indexes]
-        self.current.max.trend_values = self.__values[self.current.max.trend_indexes]
-        self.current.all.trend_values = self.__values[self.current.all.trend_indexes]
+        self.current.min.trend_values = self.get_values()[self.current.min.trend_indexes]
+        self.current.max.trend_values = self.get_values()[self.current.max.trend_indexes]
+        self.current.all.trend_values = self.get_values()[self.current.all.trend_indexes]
 
     def __save_extremes_data(self):
         self.save_extremes_eps()
@@ -673,7 +711,79 @@ class Extremes(ExtremesBase):
         self.save_trends_data()
 
 
-def main():
+class ExtremesStorageBase:
+
+    def __init__(self, batch: int):
+        self.__storage: ExtendedList[Extremes] = ExtendedList()
+        self.__iter: int = 0
+        self.__batch: int = batch
+
+    def __len__(self):
+        return len(self.__storage)
+
+    def __iter__(self):
+        return iter(self.__storage)
+
+    def __next__(self):
+        if self.__iter >= len(self.__storage):
+            raise StopIteration
+        __data = self.__storage[self.__iter]
+        self.__iter += 1
+        return __data
+
+    def __getitem__(
+            self, item: int | slice | None
+    ) -> Extremes | list[Extremes]:
+        return self.__storage[item]
+
+    def __repr__(self):
+        return "\n".join(f"=============={data.get_sub_interval():^10}==============\n{data!r}" for data in self)
+
+    def build(self, values: np.ndarray[float], split: int):
+
+        Extremes.set_values(values=values)
+        for begin in range(0, split, self.__batch):
+            end = min(begin + self.__batch, split)
+            container = Extremes(
+                values=values[begin: end],
+                indexes=list(range(begin, end)),
+                begin=begin,
+                end=end,
+                sub_interval=begin // self.__batch
+            )
+
+            self.__storage.append(container)
+
+    def search_extremes(
+            self,
+            coincident: int,
+            eps: int,
+            item: int | slice | None = None,
+    ) -> None:
+
+        __data = self.__prepare_storage_data(item=item)
+
+        _start_all_index = __data[0].get_extr_begin_combined()
+        _start_min_index = __data[0].get_extr_begin_min()
+        _start_max_index = __data[0].get_extr_begin_max()
+
+        for data in __data:
+            data.search_extremes(
+                coincident=coincident,
+                eps=eps,
+                start_all_index=_start_all_index,
+                start_min_index=_start_min_index,
+                start_max_index=_start_max_index,
+            )
+            _start_all_index = data.get_extr_end_combined()
+            _start_min_index = data.get_extr_end_min()
+            _start_max_index = data.get_extr_end_max()
+
+    def __prepare_storage_data(self, item: int | slice | None):
+        return [self[item]] if isinstance(item, int) else self[item]
+
+
+def main_extremes():
     # sourcery skip: extract-duplicate-method
 
     values = [13, 48, 36, 26, 11, 14, 24, 11, 13, 36, 41, 26, 21]
@@ -719,5 +829,14 @@ def main():
     print(a.get_extr_values_combined(after_iter=3))
 
 
+def main_extremes_storage():
+    values = [13, 48, 36, 26, 11, 14, 24, 11, 13, 36, 41, 26, 21]
+
+    a = ExtremesStorageBase(batch=3)
+    a.build(values=values, split=len(values))
+    a.search_extremes(coincident=1, eps=2)
+    print(a)
+
+
 if __name__ == '__main__':
-    main()
+    main_extremes_storage()
