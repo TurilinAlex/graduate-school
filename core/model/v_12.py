@@ -918,7 +918,7 @@ class ExtremesStorage:
             if max_check_previous > 0:
                 num_check = 0
                 while previous_sub_interval >= 0 and num_check <= max_check_previous:
-                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_indexes_combined(
+                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_values_combined(
                         after_iter=after_iter,
                     )
                     previous_sub_interval -= 1
@@ -927,14 +927,14 @@ class ExtremesStorage:
                         if num_check > max_check_previous:
                             break
 
-                        if self.__values[value] <= _extr_value:
+                        if value <= _extr_value:
                             _left = False
 
             max_check_next = (begin + _extr_index + eps_min) - end
             if max_check_next >= 0:
                 num_check = 0
                 while next_sub_interval < len(self) and num_check <= max_check_next:
-                    next_extr_combined = self._storage[next_sub_interval].get_extr_indexes_combined(
+                    next_extr_combined = self._storage[next_sub_interval].get_extr_values_combined(
                         after_iter=after_iter,
                     )
                     next_sub_interval += 1
@@ -942,7 +942,7 @@ class ExtremesStorage:
                         if num_check > max_check_next:
                             break
 
-                        if self.__values[value] < _extr_value:
+                        if value < _extr_value:
                             _right = False
 
                         num_check += 1
@@ -974,7 +974,7 @@ class ExtremesStorage:
             if max_check_previous > 0:
                 num_check = 0
                 while previous_sub_interval >= 0 and num_check <= max_check_previous:
-                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_indexes_min(
+                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_values_min(
                         after_iter=after_iter,
                     )
                     previous_sub_interval -= 1
@@ -983,14 +983,14 @@ class ExtremesStorage:
                         if num_check > max_check_previous:
                             break
 
-                        if self.__values[value] <= _extr_value:
+                        if value <= _extr_value:
                             _left = False
 
             max_check_next = (begin + _extr_index + eps_min) - end
             if max_check_next >= 0:
                 num_check = 0
                 while next_sub_interval < len(self) and num_check <= max_check_next:
-                    next_extr_combined = self._storage[next_sub_interval].get_extr_indexes_min(
+                    next_extr_combined = self._storage[next_sub_interval].get_extr_values_min(
                         after_iter=after_iter,
                     )
                     next_sub_interval += 1
@@ -998,7 +998,7 @@ class ExtremesStorage:
                         if num_check > max_check_next:
                             break
 
-                        if self.__values[value] < _extr_value:
+                        if value < _extr_value:
                             _right = False
 
                         num_check += 1
@@ -1030,7 +1030,7 @@ class ExtremesStorage:
             if max_check_previous > 0:
                 num_check = 0
                 while previous_sub_interval >= 0 and num_check <= max_check_previous:
-                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_indexes_combined(
+                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_values_combined(
                         after_iter=after_iter,
                     )
                     previous_sub_interval -= 1
@@ -1039,21 +1039,21 @@ class ExtremesStorage:
                         if num_check > max_check_previous:
                             break
 
-                        if self.__values[value] > _extr_value:
+                        if value > _extr_value:
                             _left = False
 
             max_check_next = (begin + _extr_index + eps_max) - end
             if max_check_next >= 0:
                 num_check = 0
                 while next_sub_interval < len(self) and num_check <= max_check_next:
-                    next_extr_combined = self._storage[next_sub_interval].get_extr_indexes_combined(
+                    next_extr_combined = self._storage[next_sub_interval].get_extr_values_combined(
                         after_iter=after_iter,
                     )
                     next_sub_interval += 1
                     for value in next_extr_combined:
                         if num_check > max_check_next:
                             break
-                        if self.__values[value] >= _extr_value:
+                        if value >= _extr_value:
                             _right = False
 
                         num_check += 1
@@ -1085,7 +1085,7 @@ class ExtremesStorage:
             if max_check_previous > 0:
                 num_check = 0
                 while previous_sub_interval >= 0 and num_check <= max_check_previous:
-                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_indexes_max(
+                    previous_extr_combined = self._storage[previous_sub_interval].get_extr_values_max(
                         after_iter=after_iter,
                     )
                     previous_sub_interval -= 1
@@ -1094,21 +1094,21 @@ class ExtremesStorage:
                         if num_check > max_check_previous:
                             break
 
-                        if self.__values[value] > _extr_value:
+                        if value > _extr_value:
                             _left = False
 
             max_check_next = (begin + _extr_index + eps_max) - end
             if max_check_next >= 0:
                 num_check = 0
                 while next_sub_interval < len(self) and num_check <= max_check_next:
-                    next_extr_combined = self._storage[next_sub_interval].get_extr_indexes_max(
+                    next_extr_combined = self._storage[next_sub_interval].get_extr_values_max(
                         after_iter=after_iter,
                     )
                     next_sub_interval += 1
                     for value in next_extr_combined:
                         if num_check > max_check_next:
                             break
-                        if self.__values[value] >= _extr_value:
+                        if value >= _extr_value:
                             _right = False
 
                         num_check += 1
@@ -1119,7 +1119,6 @@ class ExtremesStorage:
 
     def build(self, values: np.ndarray[float], split: int):
 
-        ExtremesStorage.set_values(values=values)
         ExtremesContainer.set_values(values=values)
 
         for begin in range(0, split, self.__batch):
@@ -1139,7 +1138,6 @@ class ExtremesStorage:
         if not isinstance(value, Iterable):
             value = [value]
 
-        ExtremesStorage.add_values(values=value)
         ExtremesContainer.add_values(values=value)
 
         _begin = self[-1].get_extr_begin_combined(after_iter=0)
@@ -1377,7 +1375,6 @@ def main():
     stor.build(values=values, split=13)
 
     stor.search_extremes(coincident=1, eps=2)
-    stor.save_extremes()
     stor.filter_extremes()
     stor.save_extremes()
 
