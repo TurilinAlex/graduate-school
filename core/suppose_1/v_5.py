@@ -1,22 +1,21 @@
 import time
 from typing import Callable
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from core.extremum import min_extremum, max_extremum
 from core.matches_extremum import BaseMatchesOnArray
 from core.sort import argsort
-from core.trend import CombinedTrendDetection, SplitTrendDetection
+from core.trend import CombinedTrendDetection
 
 
 class MatchesOnInputArray(BaseMatchesOnArray):
     @staticmethod
     def __call__(
-        extremum: Callable[[np.ndarray[np.uint32], int], np.ndarray[np.uint32]],
-        index: np.ndarray[np.uint32],
-        max_coincident=1,
-        eps: int = 1,
+            extremum: Callable[[np.ndarray[np.uint32], int], np.ndarray[np.uint32]],
+            index: np.ndarray[np.uint32],
+            max_coincident=1,
+            eps: int = 1,
     ) -> tuple[np.ndarray[np.uint32], int]:
         """
         Выделяет экстремумы при увеличении радиусе локализации `всегда` во входном массиве
@@ -66,11 +65,11 @@ def search_main_extremum(index: np.ndarray[np.uint32], coincident: int, eps: int
             for_print[i, i - j] = diff
             if diff < min_v:
                 min_v = diff
-            if min_v <= 1:
-                break
+                if min_v <= eps:
+                    break
 
         min_extr_diff[i] = min_v
-        min_diff_count[min_v] += 1
+        min_diff_count[min_v] = 1
 
         # max
         for j in range(1, (n - i)):
@@ -78,10 +77,11 @@ def search_main_extremum(index: np.ndarray[np.uint32], coincident: int, eps: int
             for_print[i, j + i] = diff
             if diff < max_v:
                 max_v = diff
-            if max_v <= 1:
-                break
+                if max_v <= eps:
+                    break
+
         max_extr_diff[i] = max_v
-        max_diff_count[max_v] += 1
+        max_diff_count[max_v] = 1
 
     # endregion Вычисление разницы между индексами
 
@@ -101,16 +101,11 @@ def search_main_extremum(index: np.ndarray[np.uint32], coincident: int, eps: int
     else:
         eps_min = __i_last + coincident - 1
 
-    if eps_min >= min_extr_diff[0]:
-        __extr_min = np.array([index[0]])
-    else:
-        k = 0
-        __extr_min = np.empty_like(index)
-        for i in range(n):
-            if min_extr_diff[i] > eps_min:
-                __extr_min[k] = index[i]
-                k += 1
-        __extr_min = __extr_min[:k]
+    __extr_min = []
+    for i in range(n):
+        if min_extr_diff[i] > eps_min or min_extr_diff[i] == len(index):
+            __extr_min.append(index[i])
+    __extr_min = np.array(__extr_min)
 
     # endregion Поиск главных локальных минимумов по заданному числу совпадений
 
@@ -130,16 +125,11 @@ def search_main_extremum(index: np.ndarray[np.uint32], coincident: int, eps: int
     else:
         eps_max = __i_last + coincident - 1
 
-    if eps_max >= max_extr_diff[n - 1]:
-        __extr_max = np.array([index[n - 1]])
-    else:
-        k = 0
-        __extr_max = np.empty_like(index)
-        for i in range(n):
-            if max_extr_diff[i] > eps_max:
-                __extr_max[k] = index[i]
-                k += 1
-        __extr_max = __extr_max[:k]
+    __extr_max = []
+    for i in range(n):
+        if max_extr_diff[i] > eps_max or max_extr_diff[i] == len(index):
+            __extr_max.append(index[i])
+    __extr_max = np.array(__extr_max)
 
     # endregion Поиск главных локальных максимумов по заданному числу совпадений
 
@@ -208,9 +198,24 @@ def search_main_extremum(index: np.ndarray[np.uint32], coincident: int, eps: int
 if __name__ == "__main__":
     # e = np.array([3, 6, 0, 2, 13, 5, 8, 10, 4, 16, 17, 19, 14, 11, 9, 18, 12, 1, 7, 15])
     np.random.seed(1273)
-    size = 50
-    a = np.array([np.random.randint(0, 20) for _ in range(size)])
+    # size = 10
+    a = np.array(
+        [
+            1.20888884 + 0.00000000000001,
+            1.20888884 - 0.00000000000001,
+            1.20888884,
+            -6.304,
+            1.404,
+            -1.904,
+            9.504,
+            1.504,
+            14.604,
+            1.704,
+            -11.804,
+        ]
+    )
     e = argsort(a)
+    size = len(e)
     #
     # print(f"a={np.arange(size, dtype=np.int32)}")
     # print(f"a={a}")
@@ -218,7 +223,7 @@ if __name__ == "__main__":
     # e = np.array([3, 5, 7, 9, 1, 0, 6, 4, 2, 8])
     # e = np.array([8, 12, 14, 19, 1, 0, 13, 9, 5, 16])
     repeat = 1
-    start_eps = 2
+    start_eps = 4
 
     match = MatchesOnInputArray()
     s1 = time.monotonic()
@@ -241,5 +246,3 @@ if __name__ == "__main__":
     trend = CombinedTrendDetection(a, size, match)
     trend.search_extremum(repeat, start_eps).search_extremum(repeat, start_eps)
 
-    print(trend.get_min_indexes(1))
-    print(trend.get_min_indexes(2))
